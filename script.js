@@ -187,22 +187,54 @@ reactorGroup.add(gyroGroup);
 gyroGroup.userData = { rx: -0.001, ry: 0.0015, rz: -0.0005 };
 rings.push(gyroGroup);
 
-// 4. Floating Tech Hexagons (Satellites)
-const hexGroup = new THREE.Group();
-const hexGeo = new THREE.CylinderGeometry(4, 4, 0.5, 6);
-const hexMat = new THREE.MeshBasicMaterial({ color: glowWhite, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, wireframe: true });
-for(let i=0; i<6; i++) {
-    const hex = new THREE.Mesh(hexGeo, hexMat);
-    // Position on a sphere
-    const phi = Math.acos(-1 + (2 * i) / 6);
-    const theta = Math.sqrt(6 * Math.PI) * phi;
-    hex.position.setFromSphericalCoords(42, phi, theta);
-    hex.lookAt(0, 0, 0); // Face inward
-    hexGroup.add(hex);
-}
-reactorGroup.add(hexGroup);
-hexGroup.userData = { rx: 0.003, ry: 0.002, rz: 0.004 };
-rings.push(hexGroup);
+// 4. Floating Orbiting Images
+const imagesGroup = new THREE.Group();
+const imageUrls = [
+    'public/icon_toby.png',
+    'public/icon_patience.png',
+    'public/icon_spiral.jpg',
+    'public/icon_leaf.png'
+];
+
+imageUrls.forEach((url, i) => {
+    textureLoader.load(url, (texture) => {
+        const isJpg = url.endsWith('.jpg');
+        let mat;
+        
+        if (isJpg) {
+            const canvas = document.createElement('canvas');
+            const img = texture.image;
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+            for(let j=0; j<imgData.data.length; j+=4) {
+                const r = imgData.data[j], g = imgData.data[j+1], b = imgData.data[j+2];
+                // Remove the light blue/white background
+                if(r > 170 && g > 180 && b > 190) {
+                    imgData.data[j+3] = 0; // Make transparent
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            const tex = new THREE.CanvasTexture(canvas);
+            mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
+        } else {
+            mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
+        }
+        
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), mat);
+        // Distribute spherically
+        const phi = Math.acos(-1 + (2 * i) / 4);
+        const theta = Math.sqrt(4 * Math.PI) * phi;
+        mesh.position.setFromSphericalCoords(40, phi, theta);
+        mesh.lookAt(0, 0, 0); // Face center
+        imagesGroup.add(mesh);
+    });
+});
+reactorGroup.add(imagesGroup);
+imagesGroup.userData = { rx: 0.005, ry: 0.003, rz: -0.004 };
+rings.push(imagesGroup);
 
 // 5. 3D Crosshairs (Axes)
 const axesGroup = new THREE.Group();
