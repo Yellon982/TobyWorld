@@ -252,8 +252,7 @@
 
             } catch (err) {
                 console.error(err);
-                statusMsg.innerText = "ERROR: " + err.message;
-                statusMsg.style.color = "#ff4444";
+                statusMsg.innerText = ""; // Hide the error text from the user
                 
                 document.getElementById('trait-background').innerText = "OFFLINE";
                 document.getElementById('trait-core').innerText = "OFFLINE";
