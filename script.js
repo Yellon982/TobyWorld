@@ -349,6 +349,12 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 window.addEventListener('pointerup', (event) => {
+    // Prevent 3D clicks if the wallet modal is open or if clicking on the UI
+    const modal = document.getElementById('wallet-modal');
+    if ((modal && modal.style.display === 'flex') || event.target.closest('#wallet-modal')) {
+        return;
+    }
+
     // Convert pointer position to normalized device coordinates
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
