@@ -91,6 +91,34 @@
             font-size: 1.2rem;
             color: #00ff88;
         }
+
+        .lore-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(0, 50, 100, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-left: 5px solid #00ffff;
+            text-align: left;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+        }
+
+        .lore-box h4 {
+            color: #00ffff;
+            margin: 0 0 1rem 0;
+            letter-spacing: 3px;
+            font-size: 0.9rem;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        .lore-box p {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #b0e0e6;
+            font-style: italic;
+            margin: 0;
+            text-wrap: pretty;
+        }
     </style>
 </head>
 <body>
@@ -118,9 +146,15 @@
                 <h4>RELIC</h4>
                 <div class="data-value" id="trait-relic">FETCHING...</div>
             </div>
-            <div class="data-box" style="grid-column: span 2; text-align: center;">
-                <button class="cyber-button" id="os-btn" style="margin-top: 5px; width: auto; padding: 10px 40px;">VIEW DEED ON OPENSEA</button>
+
+            <div class="data-box" style="grid-column: 1 / -1; text-align: center; border: none; background: transparent; padding-top: 1rem;">
+                <button class="cyber-button" id="os-btn" style="width: auto; padding: 10px 40px;">VIEW DEED ON OPENSEA</button>
             </div>
+        </div>
+        
+        <div class="lore-box">
+            <h4>/// DECRYPTED TRANSMISSION</h4>
+            <p>the pond has been still for many moons, but stillness was never sleep. beneath the reeds, old roots have begun to move. forgotten runes hum beneath the water. the gates of a new epoch loosen, one stone at a time. soon, the world will awaken not with thunder, but with the quiet return of those who waited. new lands will rise from the mist. new paths will open beyond the garden. what was planted in silence will bloom beneath an endless sun. the cold seasons are passing. keep your place by the water. infinite summers are ahead.</p>
         </div>
         
         <p id="status-msg" style="margin-top: 20px; color: #00ffff; font-family: 'Share Tech Mono';"></p>
