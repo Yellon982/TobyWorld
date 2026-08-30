@@ -121,8 +121,87 @@ const tobyNeonSprite = new THREE.Sprite(tobyNeonMat);
 tobyNeonSprite.scale.set(36.5, 36.5, 1); // Slightly larger to create an outer glow/highlight
 tobyNeonSprite.position.y = 23;
 coreGroup.add(tobyNeonSprite);
+// --- CYBER-HEX HUD REACTOR ---
 const rings = []; 
+const reactorGroup = new THREE.Group();
+reactorGroup.position.y = 0; 
+reactorGroup.position.z = -15; // Behind the UI text
+coreGroup.add(reactorGroup);
 
+const hudColor = 0x00ffff; // Cyan
+const darkHud = 0x004466; // Darker teal
+
+// Function for dashed rings using RingGeometry
+function createDashedRing(radius, tube, dashCount, color, opacity, speed) {
+    const group = new THREE.Group();
+    // To make dashCount gaps, we need 2 * dashCount segments
+    const segmentLength = (Math.PI * 2) / (dashCount * 2);
+    for(let i = 0; i < dashCount; i++) {
+        // Start angle = i * 2 * segmentLength, length = segmentLength
+        const ringGeo = new THREE.RingGeometry(radius, radius + tube, 16, 1, i * 2 * segmentLength, segmentLength);
+        const ringMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: opacity, blending: THREE.AdditiveBlending });
+        group.add(new THREE.Mesh(ringGeo, ringMat));
+    }
+    reactorGroup.add(group);
+    group.userData = { rx: 0, ry: 0, rz: speed };
+    rings.push(group);
+}
+
+// 1. Center Hexagons (Solid & Wireframe)
+// CircleGeometry with 6 segments is a perfect hexagon
+const centerHexGeo = new THREE.CircleGeometry(8, 6);
+const centerHexMat = new THREE.MeshBasicMaterial({ color: darkHud, transparent: true, opacity: 0.5 });
+const centerHex = new THREE.Mesh(centerHexGeo, centerHexMat);
+reactorGroup.add(centerHex);
+centerHex.userData = { rx: 0, ry: 0, rz: -0.002 };
+rings.push(centerHex);
+
+const hexWireGeo = new THREE.CircleGeometry(10, 6);
+const hexWireMat = new THREE.MeshBasicMaterial({ color: hudColor, transparent: true, opacity: 0.8, wireframe: true });
+const hexWire = new THREE.Mesh(hexWireGeo, hexWireMat);
+reactorGroup.add(hexWire);
+hexWire.userData = { rx: 0, ry: 0, rz: 0.002 };
+rings.push(hexWire);
+
+// 2. Crosshairs (Static vertical and horizontal lines)
+const crosshairGroup = new THREE.Group();
+const lineMat = new THREE.LineBasicMaterial({ color: hudColor, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending });
+const lineGeo1 = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-45, 0, 0), new THREE.Vector3(45, 0, 0)]);
+const lineGeo2 = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -45, 0), new THREE.Vector3(0, 45, 0)]);
+crosshairGroup.add(new THREE.Line(lineGeo1, lineMat));
+crosshairGroup.add(new THREE.Line(lineGeo2, lineMat));
+reactorGroup.add(crosshairGroup);
+
+// 3. Various Thin & Thick Data Rings
+// params: radius, tube, dashCount, color, opacity, speed
+createDashedRing(14, 0.5, 12, hudColor, 0.8, 0.005);
+createDashedRing(18, 3, 6, darkHud, 0.5, -0.003);
+createDashedRing(24, 0.2, 36, hudColor, 0.6, 0.001);
+
+// Solid thin ring
+const solidRingGeo = new THREE.RingGeometry(28, 28.5, 64);
+const solidRingMat = new THREE.MeshBasicMaterial({ color: hudColor, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending });
+const solidRing = new THREE.Mesh(solidRingGeo, solidRingMat);
+reactorGroup.add(solidRing);
+solidRing.userData = { rx: 0, ry: 0, rz: -0.0015 };
+rings.push(solidRing);
+
+createDashedRing(34, 1.5, 4, hudColor, 0.7, 0.004); // Large broken outer ring
+createDashedRing(38, 0.3, 72, hudColor, 0.5, -0.001); // Tiny outer tick marks
+
+// 4. Tech Nodes (Small glowing dots on the inner solid ring)
+const nodeGroup = new THREE.Group();
+const nodeGeo = new THREE.CircleGeometry(1, 16);
+const nodeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending });
+for (let i = 0; i < 4; i++) {
+    const node = new THREE.Mesh(nodeGeo, nodeMat);
+    const angle = i * Math.PI / 2 + Math.PI / 4;
+    node.position.set(Math.cos(angle) * 28.25, Math.sin(angle) * 28.25, 0);
+    nodeGroup.add(node);
+}
+reactorGroup.add(nodeGroup);
+nodeGroup.userData = { rx: 0, ry: 0, rz: -0.0015 };
+rings.push(nodeGroup);
 // --- HELPER: TEXT SPRITE FOR LABELS ---
 function createTextLabel(text, colorHex) {
     const canvas = document.createElement('canvas');
