@@ -134,10 +134,9 @@ coreGroup.add(reactorGroup);
 // 1. Central Core Nucleus (Inner Hot Core)
 const nucleusGeo = new THREE.SphereGeometry(10, 32, 32);
 const nucleusMat = new THREE.MeshBasicMaterial({ 
-    color: 0xe0ffff, // Hot cyan-white
-    transparent: true, 
-    opacity: 0.9, 
-    blending: THREE.AdditiveBlending 
+    color: 0xccffff,
+    transparent: false, 
+    depthWrite: true 
 });
 const nucleusMesh = new THREE.Mesh(nucleusGeo, nucleusMat);
 reactorGroup.add(nucleusMesh);
@@ -192,8 +191,8 @@ const plasmaMat = new THREE.ShaderMaterial({
     vertexShader: swirlShader.vertexShader,
     fragmentShader: swirlShader.fragmentShader,
     transparent: true,
-    opacity: 0.85,
-    blending: THREE.AdditiveBlending, // Glow effect
+    opacity: 0.9,
+    blending: THREE.NormalBlending, // Normal blending prevents washing out objects behind it
     depthWrite: false // Allow particles/nucleus inside to render
 });
 const plasmaMesh = new THREE.Mesh(plasmaGeo, plasmaMat);
