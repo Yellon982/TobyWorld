@@ -218,8 +218,6 @@ const numLorelands = islandDataMap.length;
 const orbitRadius = 65;
 const lorelands = [];
 
-const uiList = document.getElementById('loreland-list');
-
 for (let i = 0; i < numLorelands; i++) {
     const island = islandDataMap[i];
     const islandName = island.name;
@@ -270,18 +268,6 @@ for (let i = 0; i < numLorelands; i++) {
     
     lorelandsGroup.add(islandGroup);
     lorelands.push(lorelandData);
-
-    // Add to UI as an accessible link
-    let displayName = islandName.toUpperCase();
-    if (islandName === "ThePond") displayName = "THE POND";
-    const encodedColor = encodeURIComponent(colorHex);
-    
-    const uiItem = document.createElement('a');
-    uiItem.href = `land.html?island=${islandName}&color=${encodedColor}`;
-    uiItem.className = 'loreland-item accessible-link';
-    uiItem.setAttribute('aria-label', `Travel to ${displayName}. Supply remaining: ${island.count}`);
-    uiItem.innerHTML = `<span style="color:${colorHex}; text-shadow: 0 0 5px ${colorHex};">${displayName}</span> <span style="color:#00ff88;">[${island.count}]</span>`;
-    uiList.appendChild(uiItem);
 }
 
 // Make the 3D Canvas accessible
@@ -404,142 +390,5 @@ window.addEventListener('resize', () => {
 // Start animation
 animate();
 
-// --- WEB3 WALLET CONNECTION (BASE NETWORK) ---
-const connectBtn = document.getElementById('connect-wallet-btn');
-const walletInfo = document.getElementById('wallet-info');
-const walletAddressSpan = document.getElementById('wallet-address');
-const networkStatusSpan = document.getElementById('network-status');
-
-const BASE_CHAIN_ID = 8453; // Base Mainnet
-const BASE_CHAIN_ID_HEX = '0x2105'; // 8453 in hex
-
-async function connectWallet() {
-    if (typeof window.ethereum === 'undefined') {
-        alert("No web3 wallet detected. Please install MetaMask, Coinbase Wallet, or Rabby.");
-        return;
-    }
-
-    try {
-        connectBtn.innerText = "CONNECTING...";
-        
-        // Request account access
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send("eth_requestAccounts", []);
-        
-        if (accounts.length > 0) {
-            const address = accounts[0];
-            const network = await provider.getNetwork();
-            
-            // Format address: 0x1234...5678
-            const shortAddress = address.slice(0, 6) + "..." + address.slice(-4);
-            walletAddressSpan.innerText = shortAddress;
-            
-            // Check if on Base Network
-            if (Number(network.chainId) !== BASE_CHAIN_ID) {
-                networkStatusSpan.innerText = "WRONG NETWORK";
-                networkStatusSpan.style.color = "#ff3333";
-                await promptSwitchToBase();
-            } else {
-                networkStatusSpan.innerText = "BASE";
-                networkStatusSpan.style.color = "#00ff88";
-            }
-
-            // Update UI
-            connectBtn.style.display = 'none';
-            walletInfo.style.display = 'block';
-
-            // --- FETCH ERC-20 BALANCES ---
-            const erc20Abi = [
-                "function balanceOf(address owner) view returns (uint256)",
-                "function decimals() view returns (uint8)"
-            ];
-
-            const tokens = {
-                toby: { address: "0xb8D98a102b0079B69FFbc760C8d857A31653e56e", element: document.getElementById('bal-toby') },
-                taboshi: { address: "0x3A1a33cf4553Db61F0db2c1e1721CD480b02789f", element: document.getElementById('bal-taboshi') },
-                patience: { address: "0x6d96f18f00b815b2109a3766e79f6a7ad7785624", element: document.getElementById('bal-patience') }
-            };
-
-            const formatNumber = (num) => {
-                if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-                if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-                if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-                return num.toFixed(2);
-            };
-
-            for (const [key, token] of Object.entries(tokens)) {
-                try {
-                    const contract = new ethers.Contract(token.address, erc20Abi, provider);
-                    const decimals = await contract.decimals();
-                    const balance = await contract.balanceOf(address);
-                    const formattedBal = parseFloat(ethers.formatUnits(balance, decimals));
-                    
-                    token.element.innerText = formatNumber(formattedBal);
-                    token.element.style.color = "#00ff88";
-                } catch (e) {
-                    console.error(`Failed to fetch balance for ${key}:`, e);
-                    token.element.innerText = "ERROR";
-                    token.element.style.color = "#ff4444";
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Wallet connection failed:", error);
-        connectBtn.innerText = "CONNECT WALLET";
-    }
-}
-
-async function promptSwitchToBase() {
-    try {
-        await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: BASE_CHAIN_ID_HEX }],
-        });
-        networkStatusSpan.innerText = "BASE";
-        networkStatusSpan.style.color = "#00ff88";
-    } catch (switchError) {
-        // This error code indicates that the chain has not been added to MetaMask.
-        if (switchError.code === 4902) {
-            try {
-                await window.ethereum.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [
-                        {
-                            chainId: BASE_CHAIN_ID_HEX,
-                            chainName: 'Base',
-                            rpcUrls: ['https://mainnet.base.org'],
-                            nativeCurrency: {
-                                name: 'Ether',
-                                symbol: 'ETH',
-                                decimals: 18
-                            },
-                            blockExplorerUrls: ['https://basescan.org']
-                        }
-                    ],
-                });
-                networkStatusSpan.innerText = "BASE";
-                networkStatusSpan.style.color = "#00ff88";
-            } catch (addError) {
-                console.error("Failed to add Base network", addError);
-            }
-        }
-    }
-}
-
-connectBtn.addEventListener('click', connectWallet);
-
-// Listen for network/account changes
-if (window.ethereum) {
-    window.ethereum.on('chainChanged', () => {
-        window.location.reload();
-    });
-    window.ethereum.on('accountsChanged', (accounts) => {
-        if (accounts.length === 0) {
-            window.location.reload(); // User disconnected
-        } else {
-            const address = accounts[0];
-            walletAddressSpan.innerText = address.slice(0, 6) + "..." + address.slice(-4);
-        }
-    });
-}
+// End of script
 
