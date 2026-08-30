@@ -238,6 +238,7 @@
                 const metadata = await response.json();
 
                 const getTrait = (type) => {
+                    if (!metadata || !Array.isArray(metadata.attributes)) return "OFFLINE";
                     const t = metadata.attributes.find(a => a.trait_type.toUpperCase() === type);
                     return t ? t.value : "UNKNOWN";
                 };
