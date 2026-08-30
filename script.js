@@ -178,11 +178,11 @@ const swirlShader = {
             float swirl2 = sin(p.x * 4.0 - t * 1.5 + p.y * 3.0);
             float swirl3 = cos(p.x * 5.0 + p.y * 5.0 - t);
             
-            // The 4 requested colors
-            vec3 colGreen = vec3(0.0, 0.9, 0.3); // Taboshi
-            vec3 colCyan  = vec3(0.0, 0.8, 1.0); // Sato
-            vec3 colBlue  = vec3(0.1, 0.2, 0.9); // OGToby
-            vec3 colRed   = vec3(0.9, 0.1, 0.1); // Patience
+            // The 4 requested colors (Brighter to simulate light)
+            vec3 colGreen = vec3(0.0, 1.0, 0.4); // Taboshi
+            vec3 colCyan  = vec3(0.0, 0.9, 1.0); // Sato
+            vec3 colBlue  = vec3(0.1, 0.3, 1.0); // OGToby
+            vec3 colRed   = vec3(1.0, 0.1, 0.1); // Patience
             
             // Mix colors organically based on the swirl math
             vec3 col = mix(colGreen, colCyan, (sin(swirl1 * 3.0) + 1.0) * 0.5);
@@ -194,17 +194,18 @@ const swirlShader = {
     `
 };
 
-const coreGeo = new THREE.SphereGeometry(16, 64, 64);
+const coreGeo = new THREE.SphereGeometry(18, 64, 64);
 const coreMat = new THREE.ShaderMaterial({
     uniforms: swirlShader.uniforms,
     vertexShader: swirlShader.vertexShader,
     fragmentShader: swirlShader.fragmentShader,
     transparent: true,
-    opacity: 0.95
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending, // Makes the colors look like emissive light
+    depthWrite: false // Guarantees it stays behind all other graphics without clipping
 });
 const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-coreMesh.position.z = -18; // Push firmly behind Toby and the text
-coreMesh.position.y = 5; // Center it nicely behind the UI and frog
+coreMesh.position.set(0, 0, -22); // Perfectly centered in the reactor, pushed far back behind everything
 coreMesh.onBeforeRender = () => {
     coreMat.uniforms.time.value += 0.005;
 };
