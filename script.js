@@ -60,13 +60,23 @@ function createCenterUISprite() {
     // Reset shadow
     ctx.shadowBlur = 0;
 
-    // Dots
-    const dotColors = ["#ff4444", "#aa44ff", "#44ff44", "#00ffff", "#ffaa00"];
-    const dotSpacing = 50;
-    const startX = 512 - (dotSpacing * 2);
-    for(let i=0; i<5; i++) {
+    // Dots (9 island colors)
+    const dotColors = [
+        "#ff4400", // Emberreach
+        "#66ccff", // Frostveil
+        "#22ff55", // Meadow
+        "#33ff99", // Mossmere
+        "#9933ff", // Sporegrove
+        "#00ccff", // Stillwater
+        "#ffcc00", // Sunfield
+        "#0088ff", // ThePond
+        "#cc00ff"  // Waystones
+    ];
+    const dotSpacing = 35;
+    const startX = 512 - (dotSpacing * 4); // Centers 9 dots
+    for(let i=0; i<9; i++) {
         ctx.beginPath();
-        ctx.arc(startX + i * dotSpacing, 700, 12, 0, Math.PI * 2);
+        ctx.arc(startX + i * dotSpacing, 700, 10, 0, Math.PI * 2);
         ctx.fillStyle = dotColors[i];
         ctx.shadowColor = dotColors[i];
         ctx.shadowBlur = 15;
@@ -76,9 +86,9 @@ function createCenterUISprite() {
     // Stats
     ctx.shadowBlur = 10;
     ctx.shadowColor = "rgba(122, 180, 255, 0.5)";
-    ctx.font = "Bold 30px 'Courier New', monospace";
+    ctx.font = "Bold 24px 'Courier New', monospace";
     ctx.fillStyle = "#7ab4ff";
-    ctx.fillText("9 LANDS  ·  1 CORES  ·  100% ENERGY", 512, 800);
+    ctx.fillText("BACKGROUND 4 · CORE 6 · KEEPER 3 · LAND 9 · RELIC 6", 512, 800);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.minFilter = THREE.LinearFilter;
