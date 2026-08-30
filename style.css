@@ -112,6 +112,107 @@ img, canvas {
     outline: none;
 }
 
+/* --- WALLET MODAL --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 5, 10, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: rgba(0, 20, 40, 0.8);
+    border: 0.1rem solid #00ffff;
+    border-radius: 1rem;
+    padding: 2rem;
+    width: 90vw;
+    max-width: 450px;
+    position: relative;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.2), inset 0 0 20px rgba(0, 255, 255, 0.1);
+    color: #fff;
+    pointer-events: auto;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.2s, text-shadow 0.2s;
+}
+
+.close-btn:hover {
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff;
+}
+
+/* Asset Cards */
+.asset-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 1.5rem;
+}
+
+.asset-card {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #111;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.asset-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    margin-right: 16px;
+}
+
+.asset-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    text-align: left;
+}
+
+.asset-title {
+    font-family: 'Baloo 2', 'Helvetica Neue', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #111;
+}
+
+.asset-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: #888;
+    margin-top: 4px;
+}
+
+.asset-balance {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #111;
+}
+
 h3 {
     margin-top: 0;
     font-size: 1.2rem;

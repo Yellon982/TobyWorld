@@ -95,6 +95,7 @@ const tobyTexture = textureLoader.load('public/Toby.png');
 const tobyMat = new THREE.SpriteMaterial({ map: tobyTexture, transparent: true });
 const tobySprite = new THREE.Sprite(tobyMat);
 tobySprite.scale.set(35, 35, 1); // 200% bigger
+tobySprite.userData = { isCenterToby: true };
 tobySprite.position.y = 23; // Adjusted upwards to clear text
 coreGroup.add(tobySprite);
 
@@ -355,20 +356,24 @@ window.addEventListener('pointerup', (event) => {
     // Raycast from camera to pointer
     raycaster.setFromCamera(mouse, camera);
 
-    // Get all children of the lorelandsGroup that are sprites
-    const islandObjects = [];
+    // Get all interactive objects
+    const interactiveObjects = [tobySprite];
     lorelandsGroup.children.forEach(group => {
         group.children.forEach(child => {
             if (child.userData && child.userData.isIsland) {
-                islandObjects.push(child);
+                interactiveObjects.push(child);
             }
         });
     });
 
-    const intersects = raycaster.intersectObjects(islandObjects);
+    const intersects = raycaster.intersectObjects(interactiveObjects);
     if (intersects.length > 0) {
-        const clickedIsland = intersects[0].object.userData;
-        openDeedRegistry(clickedIsland.name, clickedIsland.color);
+        const clickedData = intersects[0].object.userData;
+        if (clickedData.isCenterToby) {
+            document.getElementById('wallet-modal').style.display = 'flex';
+        } else if (clickedData.isIsland) {
+            openDeedRegistry(clickedData.name, clickedData.color);
+        }
     }
 });
 
@@ -389,6 +394,157 @@ window.addEventListener('resize', () => {
 
 // Start animation
 animate();
+
+// --- WALLET AND MODAL LOGIC ---
+const modal = document.getElementById('wallet-modal');
+const closeBtn = document.getElementById('close-modal-btn');
+const connectBtn = document.getElementById('connect-wallet-btn');
+const walletInfo = document.getElementById('wallet-info');
+const walletAddressSpan = document.getElementById('wallet-address');
+const networkStatusSpan = document.getElementById('network-status');
+
+closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
+
+// Close modal when clicking outside of it
+window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+const BASE_CHAIN_ID = 8453;
+const BASE_CHAIN_ID_HEX = '0x2105';
+
+async function connectWallet() {
+    if (typeof window.ethereum === 'undefined') {
+        alert("No web3 wallet detected. Please install MetaMask, Coinbase Wallet, or Rabby.");
+        return;
+    }
+
+    try {
+        connectBtn.innerText = "CONNECTING...";
+        
+        // Request account access
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        
+        if (accounts.length > 0) {
+            const address = accounts[0];
+            const network = await provider.getNetwork();
+            
+            // Format address: 0x1234...5678
+            const shortAddress = address.slice(0, 6) + "..." + address.slice(-4);
+            walletAddressSpan.innerText = shortAddress;
+            
+            // Check if on Base Network
+            if (Number(network.chainId) !== BASE_CHAIN_ID) {
+                networkStatusSpan.innerText = "WRONG NETWORK";
+                networkStatusSpan.style.color = "#ff3333";
+                await promptSwitchToBase();
+            } else {
+                networkStatusSpan.innerText = "BASE";
+                networkStatusSpan.style.color = "#00ff88";
+            }
+
+            // Update UI
+            connectBtn.style.display = 'none';
+            walletInfo.style.display = 'block';
+
+            // --- FETCH BALANCES ---
+            const erc20Abi = [
+                "function balanceOf(address owner) view returns (uint256)",
+                "function decimals() view returns (uint8)"
+            ];
+
+            const erc721Abi = [
+                "function balanceOf(address owner) view returns (uint256)"
+            ];
+
+            const tokens = {
+                toby: { address: "0xb8D98a102b0079B69FFbc760C8d857A31653e56e", element: document.getElementById('bal-toby'), type: 'erc20' },
+                taboshi: { address: "0x3A1a33cf4553Db61F0db2c1e1721CD480b02789f", element: document.getElementById('bal-taboshi'), type: 'erc20' },
+                patience: { address: "0x6d96f18f00b815b2109a3766e79f6a7ad7785624", element: document.getElementById('bal-patience'), type: 'erc20' },
+                lorelands: { address: "0x0495601Af6f86efb14C9D478eA46b2Aa09cB164A", element: document.getElementById('bal-lorelands'), type: 'erc721' }
+            };
+
+            const formatNumber = (num) => {
+                if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+                if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+                if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+                return num.toFixed(2);
+            };
+
+            for (const [key, token] of Object.entries(tokens)) {
+                try {
+                    if (token.type === 'erc20') {
+                        const contract = new ethers.Contract(token.address, erc20Abi, provider);
+                        const decimals = await contract.decimals();
+                        const balance = await contract.balanceOf(address);
+                        const formattedBal = parseFloat(ethers.formatUnits(balance, decimals));
+                        token.element.innerText = formatNumber(formattedBal);
+                    } else if (token.type === 'erc721') {
+                        const contract = new ethers.Contract(token.address, erc721Abi, provider);
+                        const balance = await contract.balanceOf(address);
+                        token.element.innerText = balance.toString();
+                    }
+                } catch (e) {
+                    console.error(`Failed to fetch balance for ${key}:`, e);
+                    token.element.innerText = "ERROR";
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Wallet connection failed:", error);
+        connectBtn.innerText = "CONNECT WALLET";
+    }
+}
+
+async function promptSwitchToBase() {
+    try {
+        await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: BASE_CHAIN_ID_HEX }],
+        });
+        networkStatusSpan.innerText = "BASE";
+        networkStatusSpan.style.color = "#00ff88";
+    } catch (switchError) {
+        if (switchError.code === 4902) {
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [
+                        {
+                            chainId: BASE_CHAIN_ID_HEX,
+                            chainName: 'Base',
+                            rpcUrls: ['https://mainnet.base.org'],
+                            nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                            blockExplorerUrls: ['https://basescan.org']
+                        }
+                    ],
+                });
+                networkStatusSpan.innerText = "BASE";
+                networkStatusSpan.style.color = "#00ff88";
+            } catch (addError) {
+                console.error("Failed to add Base network", addError);
+            }
+        }
+    }
+}
+
+connectBtn.addEventListener('click', connectWallet);
+
+if (window.ethereum) {
+    window.ethereum.on('chainChanged', () => window.location.reload());
+    window.ethereum.on('accountsChanged', (accounts) => {
+        if (accounts.length === 0) {
+            window.location.reload();
+        } else {
+            walletAddressSpan.innerText = accounts[0].slice(0, 6) + "..." + accounts[0].slice(-4);
+        }
+    });
+}
 
 // End of script
 
