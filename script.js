@@ -121,74 +121,103 @@ const tobyNeonSprite = new THREE.Sprite(tobyNeonMat);
 tobyNeonSprite.scale.set(36.5, 36.5, 1); // Slightly larger to create an outer glow/highlight
 tobyNeonSprite.position.y = 23;
 coreGroup.add(tobyNeonSprite);
-
-// --- 3D ARC REACTOR (Orbiting the core) ---
-const rings = [];
+// --- SOLID ARC REACTOR (Backdrop for Toby) ---
+const rings = []; // We will still push rotating elements here to animate them
 const reactorGroup = new THREE.Group();
-reactorGroup.position.y = 23; // Align with Toby
+reactorGroup.position.y = 23; 
+// Push it slightly back on Z so Toby and the UI text don't clip into it
+reactorGroup.position.z = -10;
 coreGroup.add(reactorGroup);
 
 const reactorColors = {
     cyan: 0x00ffff,
     lime: 0xaaff00,
     gold: 0xffcc00,
-    teal: 0x008888
+    teal: 0x008888,
+    dark: 0x001111
 };
 
-// 1. Inner Glowing Energy Core
-const coreGeo = new THREE.IcosahedronGeometry(18, 2);
-const coreMat = new THREE.MeshBasicMaterial({
+// 1. Solid Base Plate
+const baseGeo = new THREE.CylinderGeometry(28, 28, 2, 64);
+const baseMat = new THREE.MeshBasicMaterial({ color: reactorColors.dark });
+const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+baseMesh.rotation.x = Math.PI / 2;
+reactorGroup.add(baseMesh);
+
+// 2. Glowing Inner Core
+const coreGeo = new THREE.CylinderGeometry(8, 8, 3, 32);
+const coreMat = new THREE.MeshBasicMaterial({ 
     color: reactorColors.cyan,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.3,
-    blending: THREE.AdditiveBlending
+    transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending 
 });
-const energyCore = new THREE.Mesh(coreGeo, coreMat);
-energyCore.userData = { rx: 0.01, ry: 0.02, rz: 0.01 };
-reactorGroup.add(energyCore);
-rings.push(energyCore);
+const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+coreMesh.rotation.x = Math.PI / 2;
+reactorGroup.add(coreMesh);
 
-// 2. Secondary geometric shell
-const shellGeo = new THREE.IcosahedronGeometry(20, 1);
-const shellMat = new THREE.MeshBasicMaterial({
-    color: reactorColors.lime,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.4,
-    blending: THREE.AdditiveBlending
+// 3. Inner Ring (Gold)
+const innerRingGeo = new THREE.TorusGeometry(12, 0.8, 16, 64);
+const innerRingMat = new THREE.MeshBasicMaterial({ color: reactorColors.gold });
+const innerRing = new THREE.Mesh(innerRingGeo, innerRingMat);
+reactorGroup.add(innerRing);
+innerRing.userData = { rx: 0, ry: 0, rz: 0.02 };
+rings.push(innerRing);
+
+// 4. Middle Slotted Ring (Lime/Cyan wireframe)
+const midRingGeo = new THREE.TorusGeometry(18, 1.5, 8, 24);
+const midRingMat = new THREE.MeshBasicMaterial({ 
+    color: reactorColors.lime, 
+    wireframe: true, transparent: true, opacity: 0.6 
 });
-const shell = new THREE.Mesh(shellGeo, shellMat);
-shell.userData = { rx: -0.015, ry: 0.01, rz: -0.01 };
-reactorGroup.add(shell);
-rings.push(shell);
+const midRing = new THREE.Mesh(midRingGeo, midRingMat);
+reactorGroup.add(midRing);
+midRing.userData = { rx: 0, ry: 0, rz: -0.01 };
+rings.push(midRing);
 
-// 3. Gyroscopic Arc Rings
-const ringConfigs = [
-    { radius: 24, tube: 0.4, color: reactorColors.gold, speed: 0.03 },
-    { radius: 28, tube: 0.2, color: reactorColors.cyan, speed: 0.02 },
-    { radius: 32, tube: 0.6, color: reactorColors.teal, speed: 0.015 }
-];
+// 5. Outer Ring
+const outerRingGeo = new THREE.TorusGeometry(26, 1.5, 16, 64);
+const outerRingMat = new THREE.MeshBasicMaterial({ color: reactorColors.cyan });
+const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
+reactorGroup.add(outerRing);
 
-ringConfigs.forEach(conf => {
-    const geo = new THREE.TorusGeometry(conf.radius, conf.tube, 16, 100);
-    const mat = new THREE.MeshBasicMaterial({
-        color: conf.color,
-        transparent: true,
-        opacity: 0.7,
-        blending: THREE.AdditiveBlending
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.rotation.x = Math.random() * Math.PI;
-    mesh.rotation.y = Math.random() * Math.PI;
-    mesh.userData = {
-        rx: (Math.random() - 0.5) * conf.speed,
-        ry: (Math.random() - 0.5) * conf.speed,
-        rz: (Math.random() - 0.5) * conf.speed
-    };
-    reactorGroup.add(mesh);
-    rings.push(mesh);
-});
+// 6. 10 Outer Magnetic Coils
+const coilsGroup = new THREE.Group();
+const coilCount = 10;
+const coilGeo = new THREE.BoxGeometry(4, 8, 4);
+const coilMat = new THREE.MeshBasicMaterial({ color: reactorColors.teal });
+const glowMat = new THREE.MeshBasicMaterial({ color: reactorColors.gold, wireframe: true });
+
+for (let i = 0; i < coilCount; i++) {
+    const angle = (i / coilCount) * Math.PI * 2;
+    const coil = new THREE.Mesh(coilGeo, coilMat);
+    coil.position.x = Math.cos(angle) * 26;
+    coil.position.y = Math.sin(angle) * 26;
+    coil.rotation.z = angle + Math.PI / 2;
+    
+    const glow = new THREE.Mesh(coilGeo, glowMat);
+    glow.scale.set(1.1, 1.1, 1.1);
+    coil.add(glow);
+
+    coilsGroup.add(coil);
+}
+reactorGroup.add(coilsGroup);
+coilsGroup.userData = { rx: 0, ry: 0, rz: 0.005 };
+rings.push(coilsGroup);
+
+// 7. 3 Inner Prongs
+const prongsGroup = new THREE.Group();
+const prongGeo = new THREE.BoxGeometry(2, 6, 2);
+const prongMat = new THREE.MeshBasicMaterial({ color: 0xffffff }); // Bright white
+for (let i = 0; i < 3; i++) {
+    const angle = (i / 3) * Math.PI * 2;
+    const prong = new THREE.Mesh(prongGeo, prongMat);
+    prong.position.x = Math.cos(angle) * 10;
+    prong.position.y = Math.sin(angle) * 10;
+    prong.rotation.z = angle + Math.PI / 2;
+    prongsGroup.add(prong);
+}
+reactorGroup.add(prongsGroup);
+prongsGroup.userData = { rx: 0, ry: 0, rz: -0.015 };
+rings.push(prongsGroup);
 
 // --- HELPER: TEXT SPRITE FOR LABELS ---
 function createTextLabel(text, colorHex) {
