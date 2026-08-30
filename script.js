@@ -121,92 +121,95 @@ const tobyNeonSprite = new THREE.Sprite(tobyNeonMat);
 tobyNeonSprite.scale.set(36.5, 36.5, 1); // Slightly larger to create an outer glow/highlight
 tobyNeonSprite.position.y = 23;
 coreGroup.add(tobyNeonSprite);
-// --- MID-CENTURY MODERN ATOMIC REACTOR (Backdrop for Toby) ---
+// --- JARVIS HOLOGRAPHIC HUD REACTOR (Centered on Toby World) ---
 const rings = []; // We will still push rotating elements here to animate them
 const reactorGroup = new THREE.Group();
-reactorGroup.position.y = 23; 
-// Push it slightly back on Z so Toby and the UI text don't clip into it
-reactorGroup.position.z = -10;
+// Centered more towards the "TOBY WORLD" text rather than just the frog
+reactorGroup.position.y = 5; 
+reactorGroup.position.z = -15; // Push behind text and sprite
 coreGroup.add(reactorGroup);
 
-const mcmColors = {
+const jarvisColors = {
     cyan: 0x00ffff,
-    lime: 0xaaff00,
-    gold: 0xffcc00,
-    teal: 0x008888,
-    dark: 0x001111
+    blue: 0x0088ff,
+    white: 0xffffff,
+    glow: 0x44aaff
 };
 
-// 1. Central Nucleus (Solid Teal Sphere)
-const nucleusGeo = new THREE.SphereGeometry(6, 32, 32);
-const nucleusMat = new THREE.MeshBasicMaterial({ color: mcmColors.teal });
-const nucleus = new THREE.Mesh(nucleusGeo, nucleusMat);
-reactorGroup.add(nucleus);
+// 1. Inner Data Ring (Dashed wireframe)
+const innerDashedGeo = new THREE.RingGeometry(14, 17, 32, 1, 0, Math.PI * 2);
+const innerDashedMat = new THREE.MeshBasicMaterial({ 
+    color: jarvisColors.cyan, 
+    wireframe: true, 
+    transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending 
+});
+const innerDashed = new THREE.Mesh(innerDashedGeo, innerDashedMat);
+reactorGroup.add(innerDashed);
+innerDashed.userData = { rx: 0, ry: 0, rz: 0.02 }; // Fast clockwise
+rings.push(innerDashed);
 
-// 2. Atomic Orbit Rings (Thin Gold)
-for(let i = 0; i < 3; i++) {
-    const orbitGeo = new THREE.TorusGeometry(22, 0.3, 16, 64);
-    const orbitMat = new THREE.MeshBasicMaterial({ color: mcmColors.gold });
-    const orbit = new THREE.Mesh(orbitGeo, orbitMat);
-    
-    // Rotate them to form an atom shape (0, 60, 120 degrees)
-    orbit.rotation.x = Math.PI / 2; // Lay flat first
-    orbit.rotation.y = (i * Math.PI) / 3;
-    
-    // Animate them independently
-    const orbitPivot = new THREE.Group();
-    orbitPivot.add(orbit);
-    
-    // Add small electron spheres on the rings
-    const electronGeo = new THREE.SphereGeometry(2, 16, 16);
-    const electronMat = new THREE.MeshBasicMaterial({ 
-        color: mcmColors.cyan,
-        transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending 
-    });
-    const electron = new THREE.Mesh(electronGeo, electronMat);
-    electron.position.x = 22;
-    orbit.add(electron);
+// 2. Solid Inner Ring
+const innerSolidGeo = new THREE.RingGeometry(19, 19.5, 64);
+const innerSolidMat = new THREE.MeshBasicMaterial({ 
+    color: jarvisColors.blue, 
+    transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending 
+});
+const innerSolid = new THREE.Mesh(innerSolidGeo, innerSolidMat);
+reactorGroup.add(innerSolid);
+innerSolid.userData = { rx: 0, ry: 0, rz: -0.005 }; // Slow counter-clockwise
+rings.push(innerSolid);
 
-    reactorGroup.add(orbitPivot);
-    // Spin the pivots
-    orbitPivot.userData = { rx: 0, ry: (i % 2 === 0 ? 0.015 : -0.01), rz: 0.02 };
-    rings.push(orbitPivot);
+// 3. Middle Segmented Ring (The classic Jarvis tick marks)
+const tickGroup = new THREE.Group();
+const tickCount = 36;
+const tickGeo = new THREE.PlaneGeometry(0.8, 4);
+const tickMat = new THREE.MeshBasicMaterial({ color: jarvisColors.cyan, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending });
+for (let i = 0; i < tickCount; i++) {
+    const angle = (i / tickCount) * Math.PI * 2;
+    const tick = new THREE.Mesh(tickGeo, tickMat);
+    tick.position.x = Math.cos(angle) * 23;
+    tick.position.y = Math.sin(angle) * 23;
+    tick.rotation.z = angle + Math.PI/2;
+    tickGroup.add(tick);
 }
+reactorGroup.add(tickGroup);
+tickGroup.userData = { rx: 0, ry: 0, rz: 0.01 };
+rings.push(tickGroup);
 
-// 3. Sputnik Starburst Rods & Tips
-const sputnikGroup = new THREE.Group();
-const numRods = 12;
-const rodGeo = new THREE.CylinderGeometry(0.3, 0.3, 34, 8);
-const rodMat = new THREE.MeshBasicMaterial({ color: mcmColors.gold });
+// 4. Outer Holographic Data Ring (Broken 3/4 circle)
+const outerRingGeo = new THREE.RingGeometry(27, 30, 64, 1, 0, Math.PI * 1.5);
+const outerRingMat = new THREE.MeshBasicMaterial({ 
+    color: jarvisColors.white, 
+    transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending 
+});
+const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
+reactorGroup.add(outerRing);
+outerRing.userData = { rx: 0, ry: 0, rz: -0.015 };
+rings.push(outerRing);
 
-const tipColors = [mcmColors.cyan, mcmColors.lime];
+// 5. Outer Thin Calibration Ring
+const outerThinGeo = new THREE.RingGeometry(33, 33.3, 64);
+const outerThinMat = new THREE.MeshBasicMaterial({ 
+    color: jarvisColors.cyan, 
+    transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending 
+});
+const outerThin = new THREE.Mesh(outerThinGeo, outerThinMat);
+reactorGroup.add(outerThin);
+outerThin.userData = { rx: 0, ry: 0, rz: 0.002 };
+rings.push(outerThin);
 
-for (let i = 0; i < numRods; i++) {
-    // Generate flat starburst pointing outward on the XY plane
-    const angle = (i / numRods) * Math.PI * 2;
-    
-    // Rod
-    const rod = new THREE.Mesh(rodGeo, rodMat);
-    rod.position.x = Math.cos(angle) * 17; // Half of 34 is 17
-    rod.position.y = Math.sin(angle) * 17;
-    rod.rotation.z = angle + Math.PI / 2;
-    sputnikGroup.add(rod);
-
-    // Glowing tip at the end of the rod
-    const tipGeo = new THREE.SphereGeometry(2.5, 16, 16);
-    const tipMat = new THREE.MeshBasicMaterial({ 
-        color: tipColors[i % 2],
-        transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending 
-    });
-    const tip = new THREE.Mesh(tipGeo, tipMat);
-    tip.position.x = Math.cos(angle) * 34;
-    tip.position.y = Math.sin(angle) * 34;
-    sputnikGroup.add(tip);
+// 6. Targeting Reticles / Brackets on the far outside
+const bracketGroup = new THREE.Group();
+const bracketGeo = new THREE.RingGeometry(36, 38, 32, 1, 0, Math.PI / 4); // 45 degree arc
+const bracketMat = new THREE.MeshBasicMaterial({ color: jarvisColors.blue, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
+for (let i = 0; i < 3; i++) {
+    const bracket = new THREE.Mesh(bracketGeo, bracketMat);
+    bracket.rotation.z = (i * Math.PI * 2 / 3);
+    bracketGroup.add(bracket);
 }
-
-reactorGroup.add(sputnikGroup);
-sputnikGroup.userData = { rx: 0, ry: 0, rz: 0.005 }; // Slowly spin the starburst
-rings.push(sputnikGroup);
+reactorGroup.add(bracketGroup);
+bracketGroup.userData = { rx: 0, ry: 0, rz: 0.008 };
+rings.push(bracketGroup);
 
 // --- HELPER: TEXT SPRITE FOR LABELS ---
 function createTextLabel(text, colorHex) {
