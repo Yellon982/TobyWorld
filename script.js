@@ -198,7 +198,13 @@ const imageUrls = [
 
 imageUrls.forEach((url, i) => {
     textureLoader.load(url, (texture) => {
-        const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
+        const mat = new THREE.MeshBasicMaterial({ 
+            map: texture, 
+            transparent: true, 
+            side: THREE.DoubleSide,
+            depthWrite: false, // Fix transparent overlapping (black squares)
+            alphaTest: 0.05 // Discard entirely transparent pixels
+        });
         const mesh = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), mat);
         
         // Distribute spherically
