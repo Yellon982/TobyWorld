@@ -122,34 +122,73 @@ tobyNeonSprite.scale.set(36.5, 36.5, 1); // Slightly larger to create an outer g
 tobyNeonSprite.position.y = 23;
 coreGroup.add(tobyNeonSprite);
 
-// --- HUD RINGS (Orbiting the core) ---
-const ringCount = 3;
+// --- 3D ARC REACTOR (Orbiting the core) ---
 const rings = [];
-for (let i = 0; i < ringCount; i++) {
-    const radius = 22 + (i * 6);
-    const ringGeo = new THREE.RingGeometry(radius, radius + 0.2, 64);
-    const ringMat = new THREE.MeshBasicMaterial({ 
-        color: i % 2 === 0 ? primaryColor : secondaryColor, 
-        side: THREE.DoubleSide,
+const reactorGroup = new THREE.Group();
+reactorGroup.position.y = 23; // Align with Toby
+coreGroup.add(reactorGroup);
+
+const reactorColors = {
+    cyan: 0x00ffff,
+    lime: 0xaaff00,
+    gold: 0xffcc00,
+    teal: 0x008888
+};
+
+// 1. Inner Glowing Energy Core
+const coreGeo = new THREE.IcosahedronGeometry(18, 2);
+const coreMat = new THREE.MeshBasicMaterial({
+    color: reactorColors.cyan,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.3,
+    blending: THREE.AdditiveBlending
+});
+const energyCore = new THREE.Mesh(coreGeo, coreMat);
+energyCore.userData = { rx: 0.01, ry: 0.02, rz: 0.01 };
+reactorGroup.add(energyCore);
+rings.push(energyCore);
+
+// 2. Secondary geometric shell
+const shellGeo = new THREE.IcosahedronGeometry(20, 1);
+const shellMat = new THREE.MeshBasicMaterial({
+    color: reactorColors.lime,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.4,
+    blending: THREE.AdditiveBlending
+});
+const shell = new THREE.Mesh(shellGeo, shellMat);
+shell.userData = { rx: -0.015, ry: 0.01, rz: -0.01 };
+reactorGroup.add(shell);
+rings.push(shell);
+
+// 3. Gyroscopic Arc Rings
+const ringConfigs = [
+    { radius: 24, tube: 0.4, color: reactorColors.gold, speed: 0.03 },
+    { radius: 28, tube: 0.2, color: reactorColors.cyan, speed: 0.02 },
+    { radius: 32, tube: 0.6, color: reactorColors.teal, speed: 0.015 }
+];
+
+ringConfigs.forEach(conf => {
+    const geo = new THREE.TorusGeometry(conf.radius, conf.tube, 16, 100);
+    const mat = new THREE.MeshBasicMaterial({
+        color: conf.color,
         transparent: true,
-        opacity: 0.6
+        opacity: 0.7,
+        blending: THREE.AdditiveBlending
     });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    
-    // Random initial rotations
-    ring.rotation.x = Math.random() * Math.PI;
-    ring.rotation.y = Math.random() * Math.PI;
-    
-    // Store custom rotation speeds
-    ring.userData = {
-        rx: (Math.random() - 0.5) * 0.02,
-        ry: (Math.random() - 0.5) * 0.02,
-        rz: (Math.random() - 0.5) * 0.02
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = Math.random() * Math.PI;
+    mesh.rotation.y = Math.random() * Math.PI;
+    mesh.userData = {
+        rx: (Math.random() - 0.5) * conf.speed,
+        ry: (Math.random() - 0.5) * conf.speed,
+        rz: (Math.random() - 0.5) * conf.speed
     };
-    
-    coreGroup.add(ring);
-    rings.push(ring);
-}
+    reactorGroup.add(mesh);
+    rings.push(mesh);
+});
 
 // --- HELPER: TEXT SPRITE FOR LABELS ---
 function createTextLabel(text, colorHex) {
