@@ -121,42 +121,27 @@ const tobyNeonSprite = new THREE.Sprite(tobyNeonMat);
 tobyNeonSprite.scale.set(36.5, 36.5, 1); // Slightly larger to create an outer glow/highlight
 tobyNeonSprite.position.y = 23;
 coreGroup.add(tobyNeonSprite);
-// --- SPHERICAL CYBER-HEX HUD REACTOR ---
-const rings = []; 
+// --- FUTURISTIC TOBYWORLD REACTOR CORE ---
+const rings = []; // Animation tracking array
 const reactorGroup = new THREE.Group();
-reactorGroup.position.y = 12; // Centered between frog and text
-reactorGroup.position.z = 0; // Wraps completely around Toby
+reactorGroup.position.y = 12; // Center behind Toby
+reactorGroup.position.z = -15; // Set deep enough so Toby (z=0) is in front, and islands orbit around it
 coreGroup.add(reactorGroup);
 
-const hudColor = 0x00ffff; // Cyan
-const darkHud = 0x004466; // Darker teal
-const glowWhite = 0xddeeff;
+// 1. Central Core Nucleus (Inner Hot Core)
+const nucleusGeo = new THREE.SphereGeometry(10, 32, 32);
+const nucleusMat = new THREE.MeshBasicMaterial({ 
+    color: 0xe0ffff, // Hot cyan-white
+    transparent: true, 
+    opacity: 0.9, 
+    blending: THREE.AdditiveBlending 
+});
+const nucleusMesh = new THREE.Mesh(nucleusGeo, nucleusMat);
+reactorGroup.add(nucleusMesh);
 
-// Function for spherical dashed torus rings
-function createSphericalRing(radius, tube, dashCount, color, opacity, speedX, speedY, speedZ, initRotX, initRotY) {
-    const group = new THREE.Group();
-    const segmentLength = (Math.PI * 2) / (dashCount * 2);
-    for(let i = 0; i < dashCount; i++) {
-        // TorusGeometry(radius, tube, radialSegments, tubularSegments, arc)
-        const ringGeo = new THREE.TorusGeometry(radius, tube, 6, 32, segmentLength);
-        const ringMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: opacity, blending: THREE.AdditiveBlending });
-        const mesh = new THREE.Mesh(ringGeo, ringMat);
-        mesh.rotation.z = i * 2 * segmentLength;
-        group.add(mesh);
-    }
-    group.rotation.x = initRotX;
-    group.rotation.y = initRotY;
-    reactorGroup.add(group);
-    group.userData = { rx: speedX, ry: speedY, rz: speedZ };
-    rings.push(group);
-    return group;
-}
-
-// 1. Center Solid Swirling Sphere Core (Taboshi, Sato, OGToby, Patience colors)
+// 2. Swirling Plasma Surface (Outer Sphere Shader)
 const swirlShader = {
-    uniforms: {
-        time: { value: 0 }
-    },
+    uniforms: { time: { value: 0 } },
     vertexShader: `
         varying vec2 vUv;
         void main() {
@@ -167,126 +152,138 @@ const swirlShader = {
     fragmentShader: `
         uniform float time;
         varying vec2 vUv;
-        
         void main() {
-            // Convert UV to centered coordinates
             vec2 p = vUv * 2.0 - 1.0;
-            float t = time;
+            float t = time * 0.8;
             
-            // Generate fluid noise/swirl patterns
-            float swirl1 = sin(p.x * 6.0 + t) * cos(p.y * 6.0 + t);
-            float swirl2 = sin(p.x * 4.0 - t * 1.5 + p.y * 3.0);
-            float swirl3 = cos(p.x * 5.0 + p.y * 5.0 - t);
+            // Complex dimensional plasma noise
+            float swirl1 = sin(p.x * 5.0 + t) * cos(p.y * 5.0 + t);
+            float swirl2 = sin(p.x * 3.0 - t * 1.5 + p.y * 3.0);
+            float swirl3 = cos(p.x * 4.0 + p.y * 4.0 - t);
             
-            // Mostly OGToby Blue base
-            vec3 baseCol = vec3(0.0, 0.4, 1.0); // OGToby Blue
+            // Colors
+            vec3 baseCol = vec3(0.05, 0.1, 0.9); // Deep space blue
+            vec3 colCyan = vec3(0.0, 0.8, 1.0);  // Cyan highlights
+            vec3 colPurple = vec3(0.5, 0.0, 1.0); // Purple energy
+            vec3 colRed = vec3(1.0, 0.1, 0.2); // Red plasma
+            vec3 colGreen = vec3(0.0, 1.0, 0.5); // Green wisps
             
-            // Hints of other colors
-            vec3 colGreen = vec3(0.0, 1.0, 0.4); // Taboshi
-            vec3 colCyan  = vec3(0.0, 0.9, 1.0); // Sato
-            vec3 colRed   = vec3(1.0, 0.1, 0.1); // Patience
+            float maskCyan = pow((sin(swirl1 * 3.0) + 1.0) * 0.5, 2.0);
+            float maskPurple = pow((cos(swirl2 * 3.0) + 1.0) * 0.5, 2.5);
+            float maskRed = pow((sin(swirl3 * 3.0 + swirl1) + 1.0) * 0.5, 4.0);
+            float maskGreen = pow((cos(swirl1 * 4.0 + swirl3) + 1.0) * 0.5, 6.0);
             
-            // Create sharp peaks for the "hints" to make them look like flowing energy
-            float maskGreen = pow((sin(swirl1 * 3.0) + 1.0) * 0.5, 3.0);
-            float maskCyan  = pow((cos(swirl2 * 3.0) + 1.0) * 0.5, 2.0);
-            float maskRed   = pow((sin(swirl3 * 3.0 + swirl1) + 1.0) * 0.5, 4.0);
-            
-            // Layer the colors
             vec3 col = baseCol;
             col = mix(col, colCyan, maskCyan);
-            col = mix(col, colGreen, maskGreen);
+            col = mix(col, colPurple, maskPurple);
             col = mix(col, colRed, maskRed);
+            col = mix(col, colGreen, maskGreen);
             
             gl_FragColor = vec4(col, 1.0);
         }
     `
 };
-
-const coreGeo = new THREE.SphereGeometry(18, 64, 64);
-const coreMat = new THREE.ShaderMaterial({
+const plasmaGeo = new THREE.SphereGeometry(16, 64, 64);
+const plasmaMat = new THREE.ShaderMaterial({
     uniforms: swirlShader.uniforms,
     vertexShader: swirlShader.vertexShader,
     fragmentShader: swirlShader.fragmentShader,
     transparent: true,
-    opacity: 0.9,
-    blending: THREE.AdditiveBlending, // Makes the colors look like emissive light
-    depthWrite: false // Don't block other graphics
+    opacity: 0.85,
+    blending: THREE.AdditiveBlending, // Glow effect
+    depthWrite: false // Allow particles/nucleus inside to render
 });
-const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-coreMesh.position.set(0, 0, -5); // Close enough to avoid parallax shifting
-coreMesh.renderOrder = -999; // Guarantee it renders BEHIND Toby and Text ALWAYS
-coreMesh.onBeforeRender = () => {
-    coreMat.uniforms.time.value += 0.003; // Smooth flowing effect
-};
-reactorGroup.add(coreMesh);
-// Physical rotation is 0 so the sphere never wobbles or shifts, only the texture flows!
-coreMesh.userData = { rx: 0, ry: 0, rz: 0 }; 
-rings.push(coreMesh);
+const plasmaMesh = new THREE.Mesh(plasmaGeo, plasmaMat);
+plasmaMesh.onBeforeRender = () => { plasmaMat.uniforms.time.value += 0.003; };
+reactorGroup.add(plasmaMesh);
 
-// 2. Intersecting Spherical Data Rings (Gyroscope)
-// radius, tube, dashCount, color, opacity, speedX, speedY, speedZ, initRotX, initRotY
-createSphericalRing(24, 0.5, 12, hudColor, 0.8,  0.005, 0, 0, 0, 0); // Flat on XY
-createSphericalRing(28, 1.5, 6, darkHud, 0.5,   0, 0.003, 0, Math.PI/2, 0); // Flat on XZ
-createSphericalRing(32, 0.2, 36, hudColor, 0.6, 0, 0, 0.002, 0, Math.PI/2); // Flat on YZ
-
-// 3. Solid thin rings for structure
-const solidMat = new THREE.MeshBasicMaterial({ color: hudColor, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending });
-const ringXY = new THREE.Mesh(new THREE.TorusGeometry(36, 0.3, 8, 64), solidMat);
-const ringXZ = new THREE.Mesh(new THREE.TorusGeometry(36, 0.3, 8, 64), solidMat);
-ringXZ.rotation.x = Math.PI/2;
-const ringYZ = new THREE.Mesh(new THREE.TorusGeometry(36, 0.3, 8, 64), solidMat);
-ringYZ.rotation.y = Math.PI/2;
-
-const gyroGroup = new THREE.Group();
-gyroGroup.add(ringXY);
-gyroGroup.add(ringXZ);
-gyroGroup.add(ringYZ);
-reactorGroup.add(gyroGroup);
-gyroGroup.userData = { rx: -0.001, ry: 0.0015, rz: -0.0005 };
-rings.push(gyroGroup);
-
-// 4. Floating Orbiting Images
-const imagesGroup = new THREE.Group();
-const imageUrls = [
-    'public/toby_trans.png',
-    'public/patience_trans.png',
-    'public/spiral_trans.png',
-    'public/leaf_trans.png'
-];
-
-imageUrls.forEach((url, i) => {
-    textureLoader.load(url, (texture) => {
-        const mat = new THREE.MeshBasicMaterial({ 
-            map: texture, 
-            transparent: true, 
-            side: THREE.DoubleSide,
-            depthWrite: false, // Fix transparent overlapping (black squares)
-            alphaTest: 0.05 // Discard entirely transparent pixels
-        });
-        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), mat);
-        
-        // Distribute spherically
-        const phi = Math.acos(-1 + (2 * i) / 4);
-        const theta = Math.sqrt(4 * Math.PI) * phi;
-        mesh.position.setFromSphericalCoords(40, phi, theta);
-        mesh.lookAt(0, 0, 0); // Face center
-        imagesGroup.add(mesh);
+// 3. Containment Field Rings (3D Orbital Planes)
+function createContainmentRing(radius, tube, color, rotX, rotY, rotZ, speedX, speedY, speedZ) {
+    const geo = new THREE.TorusGeometry(radius, tube, 4, 100);
+    const mat = new THREE.MeshBasicMaterial({ 
+        color: color, 
+        transparent: true, 
+        opacity: 0.4, 
+        blending: THREE.AdditiveBlending 
     });
-});
-reactorGroup.add(imagesGroup);
-imagesGroup.userData = { rx: 0.005, ry: 0.003, rz: -0.004 };
-rings.push(imagesGroup);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.set(rotX, rotY, rotZ);
+    reactorGroup.add(mesh);
+    mesh.userData = { rx: speedX, ry: speedY, rz: speedZ };
+    rings.push(mesh);
+}
+// Create intersecting dimensional planes
+createContainmentRing(22, 0.2, 0x00ffff, Math.PI/2, 0, 0, 0, 0, 0.004); // Cyan Horizontal
+createContainmentRing(26, 0.1, 0x0088ff, Math.PI/3, Math.PI/4, 0, 0.002, 0.003, 0); // Blue Tilted
+createContainmentRing(30, 0.15, 0x9900ff, -Math.PI/6, 0, Math.PI/8, -0.001, 0.002, 0); // Purple Vertical
+createContainmentRing(34, 0.05, 0x00ff88, 0, Math.PI/3, 0, 0, 0.001, 0.003); // Green Outer
 
-// 5. 3D Crosshairs (Axes)
-const axesGroup = new THREE.Group();
-const lineMat = new THREE.LineBasicMaterial({ color: hudColor, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending });
-const lineGeoX = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-50, 0, 0), new THREE.Vector3(50, 0, 0)]);
-const lineGeoY = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -50, 0), new THREE.Vector3(0, 50, 0)]);
-const lineGeoZ = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, -50), new THREE.Vector3(0, 0, 50)]);
-axesGroup.add(new THREE.Line(lineGeoX, lineMat));
-axesGroup.add(new THREE.Line(lineGeoY, lineMat));
-axesGroup.add(new THREE.Line(lineGeoZ, lineMat));
-reactorGroup.add(axesGroup);
+// 4. Energy Spiral / Vortex
+const vortexGeo = new THREE.CylinderGeometry(20, 0, 40, 32, 1, true);
+const vortexMat = new THREE.MeshBasicMaterial({
+    color: 0x0044ff,
+    transparent: true,
+    opacity: 0.05,
+    wireframe: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide
+});
+const vortex1 = new THREE.Mesh(vortexGeo, vortexMat);
+vortex1.rotation.x = Math.PI / 2;
+reactorGroup.add(vortex1);
+vortex1.userData = { rx: 0, ry: 0, rz: 0.005 };
+rings.push(vortex1);
+const vortex2 = new THREE.Mesh(vortexGeo, vortexMat);
+vortex2.rotation.x = -Math.PI / 2;
+reactorGroup.add(vortex2);
+vortex2.userData = { rx: 0, ry: 0, rz: -0.005 };
+rings.push(vortex2);
+
+// 5. Particles orbiting the core
+const particleCount = 400;
+const particleGeo = new THREE.BufferGeometry();
+const particlePos = new Float32Array(particleCount * 3);
+for(let i=0; i<particleCount; i++) {
+    const r = 18 + Math.random() * 20; // Spread between r=18 and r=38
+    const theta = Math.random() * 2 * Math.PI;
+    const phi = Math.acos((Math.random() * 2) - 1);
+    particlePos[i*3] = r * Math.sin(phi) * Math.cos(theta);
+    particlePos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    particlePos[i*3+2] = r * Math.cos(phi);
+}
+particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
+const particleMat = new THREE.PointsMaterial({
+    color: 0x88ccff,
+    size: 0.8,
+    transparent: true,
+    opacity: 0.7,
+    blending: THREE.AdditiveBlending
+});
+const particleSystem = new THREE.Points(particleGeo, particleMat);
+reactorGroup.add(particleSystem);
+particleSystem.userData = { rx: 0.001, ry: 0.0015, rz: 0.001 };
+rings.push(particleSystem);
+
+// 6. Toby Backlight / Halo Glow
+const haloCanvas = document.createElement('canvas');
+haloCanvas.width = 128; haloCanvas.height = 128;
+const haloCtx = haloCanvas.getContext('2d');
+const haloGrad = haloCtx.createRadialGradient(64,64,0, 64,64,64);
+haloGrad.addColorStop(0, '#00aaff');
+haloGrad.addColorStop(0.4, '#0055ff');
+haloGrad.addColorStop(1, '#000000');
+haloCtx.fillStyle = haloGrad;
+haloCtx.fillRect(0,0,128,128);
+const tobyHaloMat = new THREE.SpriteMaterial({ 
+    map: new THREE.CanvasTexture(haloCanvas), 
+    transparent: true, 
+    blending: THREE.AdditiveBlending, 
+    opacity: 0.7 
+});
+const tobyHalo = new THREE.Sprite(tobyHaloMat);
+tobyHalo.scale.set(60, 60, 1);
+tobyHalo.position.set(0, 23, -2); // Behind Toby but in front of reactor
+coreGroup.add(tobyHalo);
 // --- HELPER: TEXT SPRITE FOR LABELS ---
 function createTextLabel(text, colorHex) {
     const canvas = document.createElement('canvas');
@@ -468,6 +465,7 @@ function animate() {
     // Dynamic local floating for each loreland
     lorelands.forEach(l => {
         // Base position based on their fixed angle in the group
+        const globalAngle = l.baseAngle + lorelandsGroup.rotation.y;
         const baseX = Math.cos(l.baseAngle) * l.distance;
         const baseZ = Math.sin(l.baseAngle) * l.distance;
         
@@ -482,6 +480,29 @@ function animate() {
         l.group.position.x = baseX + driftX;
         l.group.position.z = baseZ + driftZ;
         l.group.position.y = l.yOffset + floatY;
+        
+        // --- 3D Depth Parallax Effect ---
+        // World Z goes from roughly -65 (deep background) to +65 (extreme foreground)
+        const worldZ = Math.sin(globalAngle) * l.distance;
+        const depthFactor = (worldZ + l.distance) / (l.distance * 2); // 0 (back) to 1 (front)
+        
+        // Scale: Smaller in the back, larger in the front
+        const targetScale = 0.6 + (depthFactor * 0.6); // Ranges from 0.6 to 1.2
+        l.group.scale.set(targetScale, targetScale, 1);
+        
+        // Brightness & Opacity: Dimmer/blurrier in the back, bright in the front
+        l.group.children.forEach(child => {
+            if (child.material) {
+                if (child.userData && child.userData.isIsland) {
+                    // Darken the island texture if it's behind the reactor
+                    const brightness = 0.4 + (depthFactor * 0.6); // 0.4 to 1.0
+                    child.material.color.setRGB(brightness, brightness, brightness);
+                } else {
+                    // Soften the aura and text label in the background
+                    child.material.opacity = 0.2 + (depthFactor * 0.8);
+                }
+            }
+        });
     });
 
     // Slow global rotation for the whole universe
