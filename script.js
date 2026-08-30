@@ -121,93 +121,98 @@ const tobyNeonSprite = new THREE.Sprite(tobyNeonMat);
 tobyNeonSprite.scale.set(36.5, 36.5, 1); // Slightly larger to create an outer glow/highlight
 tobyNeonSprite.position.y = 23;
 coreGroup.add(tobyNeonSprite);
-// --- LORELAND MASTER CORE (3D High-Tech) ---
+// --- FLAT SPINNING ARC REACTOR (Iron Man Style) ---
 const rings = []; 
 const reactorGroup = new THREE.Group();
-reactorGroup.position.y = 0; // Centered exactly on "TOBY WORLD" text
-reactorGroup.position.z = -15; // Behind the UI text
+reactorGroup.position.y = 0; // Centered on text
+reactorGroup.position.z = -15; // Behind text
 coreGroup.add(reactorGroup);
 
-// The 9 main Loreland colors
-const loreColors = [
-    0xff4400, 0x66ccff, 0x22ff55, 
-    0x33ff99, 0x9933ff, 0x00ccff, 
-    0xffcc00, 0x0088ff, 0xcc00ff
-];
+// Load the images for the reactor
+const texPatience = textureLoader.load('public/Patience.PNG');
+const texToby = textureLoader.load('public/OGToby.png');
+const texTaboshi = textureLoader.load('public/Taboshi.png');
+const texSato = textureLoader.load('public/sato.PNG');
 
-// All cylinders rotated to face forward (rotation.x = Math.PI/2)
+const reactorColors = {
+    cyan: 0x00ffff,
+    glow: 0x44aaff,
+    dark: 0x001111,
+    white: 0xffffff
+};
 
-// 1. Heavy Hexagonal Base Plate (Backdrop)
-const baseGeo = new THREE.CylinderGeometry(35, 35, 2, 6);
-const baseMat = new THREE.MeshBasicMaterial({ color: 0x001122, wireframe: true, transparent: true, opacity: 0.5 });
-const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-baseMesh.rotation.x = Math.PI / 2;
-reactorGroup.add(baseMesh);
-baseMesh.userData = { rx: 0, ry: 0, rz: 0.002 };
-rings.push(baseMesh);
-
-// 2. The 9 Colored Energy Pillars
-const pillarsGroup = new THREE.Group();
-const pillarGeo = new THREE.BoxGeometry(3, 8, 3);
-for (let i = 0; i < 9; i++) {
-    const angle = (i / 9) * Math.PI * 2;
-    const pMat = new THREE.MeshBasicMaterial({ 
-        color: loreColors[i], 
-        transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending 
-    });
-    const pillar = new THREE.Mesh(pillarGeo, pMat);
-    pillar.position.x = Math.cos(angle) * 22;
-    pillar.position.y = Math.sin(angle) * 22;
-    pillar.rotation.z = angle + Math.PI / 2;
-    
-    // Add bright inner core to each pillar
-    const coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const pCore = new THREE.Mesh(new THREE.BoxGeometry(1, 9, 1), coreMat);
-    pillar.add(pCore);
-
-    pillarsGroup.add(pillar);
+// Helper for textured flat meshes
+function createFlatIcon(texture, size) {
+    const geo = new THREE.PlaneGeometry(size, size);
+    const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
+    return new THREE.Mesh(geo, mat);
 }
-reactorGroup.add(pillarsGroup);
-pillarsGroup.userData = { rx: 0, ry: 0, rz: -0.01 };
-rings.push(pillarsGroup);
 
-// 3. Central Octagonal Hub
-const hubGeo = new THREE.CylinderGeometry(12, 12, 4, 8);
-const hubMat = new THREE.MeshBasicMaterial({ color: 0x003344, transparent: true, opacity: 0.8 });
-const hub = new THREE.Mesh(hubGeo, hubMat);
-hub.rotation.x = Math.PI / 2;
-reactorGroup.add(hub);
+// 1. Dark glowing base
+const baseGeo = new THREE.CircleGeometry(32, 64);
+const baseMat = new THREE.MeshBasicMaterial({ color: 0x002233 });
+const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+reactorGroup.add(baseMesh);
 
-// 4. Central Glowing Core
-const coreGeo = new THREE.CylinderGeometry(6, 6, 5, 32);
-const coreMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
-const core = new THREE.Mesh(coreGeo, coreMat);
-core.rotation.x = Math.PI / 2;
-reactorGroup.add(core);
-
-// 5. Outer Protective Ring
-const outerRingGeo = new THREE.TorusGeometry(32, 1.5, 8, 64);
-const outerRingMat = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true, transparent: true, opacity: 0.6 });
+// 2. Outer Cyan Glow Ring
+const outerRingGeo = new THREE.RingGeometry(30, 32, 64);
+const outerRingMat = new THREE.MeshBasicMaterial({ color: reactorColors.cyan, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
 const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
 reactorGroup.add(outerRing);
-outerRing.userData = { rx: 0, ry: 0, rz: 0.015 };
+outerRing.userData = { rx: 0, ry: 0, rz: 0.005 };
 rings.push(outerRing);
 
-// 6. Data Stream Ring (Floating fragments)
-const dataGroup = new THREE.Group();
-const dataGeo = new THREE.PlaneGeometry(2, 4);
-const dataMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending });
-for (let i = 0; i < 18; i++) {
-    const angle = (i / 18) * Math.PI * 2;
-    const fragment = new THREE.Mesh(dataGeo, dataMat);
-    fragment.position.x = Math.cos(angle) * 16;
-    fragment.position.y = Math.sin(angle) * 16;
-    fragment.rotation.z = angle + Math.PI / 2;
-    dataGroup.add(fragment);
+// 3. The 10 Dark Blocks
+const blocksGroup = new THREE.Group();
+const blockCount = 10;
+for(let i=0; i<blockCount; i++) {
+    const angle = (i / blockCount) * Math.PI * 2;
+    const blockGeo = new THREE.RingGeometry(20, 28, 4, 1, angle - 0.15, 0.3);
+    const blockMat = new THREE.MeshBasicMaterial({ color: 0x000511 }); // Very dark blue/black
+    const block = new THREE.Mesh(blockGeo, blockMat);
+    blocksGroup.add(block);
 }
-reactorGroup.add(dataGroup);
-dataGroup.userData = { rx: 0, ry: 0, rz: -0.025 };
-rings.push(dataGroup);
+reactorGroup.add(blocksGroup);
+blocksGroup.userData = { rx: 0, ry: 0, rz: 0.01 };
+rings.push(blocksGroup);
+
+// 4. Inner Dashed Ring
+const dashedGeo = new THREE.RingGeometry(17, 18, 32, 1, 0, Math.PI * 2);
+const dashedMat = new THREE.MeshBasicMaterial({ color: reactorColors.white, wireframe: true, transparent: true, opacity: 0.6 });
+const dashedRing = new THREE.Mesh(dashedGeo, dashedMat);
+reactorGroup.add(dashedRing);
+dashedRing.userData = { rx: 0, ry: 0, rz: -0.015 };
+rings.push(dashedRing);
+
+// 5. Center Red Patience Triangle
+const patienceMesh = createFlatIcon(texPatience, 32);
+reactorGroup.add(patienceMesh);
+// Spin it slowly
+patienceMesh.userData = { rx: 0, ry: 0, rz: 0.002 };
+rings.push(patienceMesh);
+
+// 6. Orbiting Small Icons (Toby, Taboshi, Sato)
+const iconGroup = new THREE.Group();
+const iconRadius = 24; // Positioned over the dark blocks
+const icons = [
+    { tex: texToby, size: 6 },
+    { tex: texTaboshi, size: 6 },
+    { tex: texSato, size: 6 }
+];
+
+icons.forEach((ic, idx) => {
+    const angle = (idx / icons.length) * Math.PI * 2;
+    const mesh = createFlatIcon(ic.tex, ic.size);
+    mesh.position.x = Math.cos(angle) * iconRadius;
+    mesh.position.y = Math.sin(angle) * iconRadius;
+    // Rotate the mesh so its top points outward from the center
+    mesh.rotation.z = angle - Math.PI / 2;
+    iconGroup.add(mesh);
+});
+
+reactorGroup.add(iconGroup);
+iconGroup.userData = { rx: 0, ry: 0, rz: -0.01 }; // Orbit counter-clockwise
+rings.push(iconGroup);
 
 // --- HELPER: TEXT SPRITE FOR LABELS ---
 function createTextLabel(text, colorHex) {
