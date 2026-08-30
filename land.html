@@ -246,10 +246,6 @@
                 document.getElementById('trait-core').innerText = getTrait("CORE");
                 document.getElementById('trait-keeper').innerText = getTrait("KEEPER");
                 document.getElementById('trait-relic').innerText = getTrait("RELIC");
-
-                // We still link to the real contract on OpenSea
-                const CONTRACT_ADDRESS = "0x0495601Af6f86efb14C9D478eA46b2Aa09cB164A";
-                document.getElementById('os-btn').onclick = () => window.open("https://opensea.io/collection/tobyworld-canonical-lore-land-deeds/overview", "_blank");
                 
                 statusMsg.innerText = "DATA SYNC COMPLETE.";
                 setTimeout(() => statusMsg.innerText = "", 2000);
@@ -265,6 +261,9 @@
                 document.getElementById('trait-relic').innerText = "OFFLINE";
             }
         }
+
+        // Bind static button logic outside of async fetch
+        document.getElementById('os-btn').onclick = () => window.open("https://opensea.io/collection/tobyworld-canonical-lore-land-deeds/overview", "_blank");
 
         fetchIslandData();
     </script>
