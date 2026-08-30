@@ -178,16 +178,24 @@ const swirlShader = {
             float swirl2 = sin(p.x * 4.0 - t * 1.5 + p.y * 3.0);
             float swirl3 = cos(p.x * 5.0 + p.y * 5.0 - t);
             
-            // The 4 requested colors (Brighter to simulate light)
+            // Mostly OGToby Blue base
+            vec3 baseCol = vec3(0.0, 0.4, 1.0); // OGToby Blue
+            
+            // Hints of other colors
             vec3 colGreen = vec3(0.0, 1.0, 0.4); // Taboshi
             vec3 colCyan  = vec3(0.0, 0.9, 1.0); // Sato
-            vec3 colBlue  = vec3(0.1, 0.3, 1.0); // OGToby
             vec3 colRed   = vec3(1.0, 0.1, 0.1); // Patience
             
-            // Mix colors organically based on the swirl math
-            vec3 col = mix(colGreen, colCyan, (sin(swirl1 * 3.0) + 1.0) * 0.5);
-            col = mix(col, colBlue, (cos(swirl2 * 3.0) + 1.0) * 0.5);
-            col = mix(col, colRed, (sin(swirl3 * 3.0 + swirl1) + 1.0) * 0.5);
+            // Create sharp peaks for the "hints" to make them look like flowing energy
+            float maskGreen = pow((sin(swirl1 * 3.0) + 1.0) * 0.5, 3.0);
+            float maskCyan  = pow((cos(swirl2 * 3.0) + 1.0) * 0.5, 2.0);
+            float maskRed   = pow((sin(swirl3 * 3.0 + swirl1) + 1.0) * 0.5, 4.0);
+            
+            // Layer the colors
+            vec3 col = baseCol;
+            col = mix(col, colCyan, maskCyan);
+            col = mix(col, colGreen, maskGreen);
+            col = mix(col, colRed, maskRed);
             
             gl_FragColor = vec4(col, 1.0);
         }
@@ -200,17 +208,19 @@ const coreMat = new THREE.ShaderMaterial({
     vertexShader: swirlShader.vertexShader,
     fragmentShader: swirlShader.fragmentShader,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.9,
     blending: THREE.AdditiveBlending, // Makes the colors look like emissive light
-    depthWrite: false // Guarantees it stays behind all other graphics without clipping
+    depthWrite: false // Don't block other graphics
 });
 const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-coreMesh.position.set(0, 0, -22); // Perfectly centered in the reactor, pushed far back behind everything
+coreMesh.position.set(0, 0, -5); // Close enough to avoid parallax shifting
+coreMesh.renderOrder = -999; // Guarantee it renders BEHIND Toby and Text ALWAYS
 coreMesh.onBeforeRender = () => {
-    coreMat.uniforms.time.value += 0.005;
+    coreMat.uniforms.time.value += 0.003; // Smooth flowing effect
 };
 reactorGroup.add(coreMesh);
-coreMesh.userData = { rx: 0.001, ry: -0.002, rz: 0.0015 };
+// Physical rotation is 0 so the sphere never wobbles or shifts, only the texture flows!
+coreMesh.userData = { rx: 0, ry: 0, rz: 0 }; 
 rings.push(coreMesh);
 
 // 2. Intersecting Spherical Data Rings (Gyroscope)
