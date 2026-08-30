@@ -335,19 +335,7 @@ function animate() {
         const targetScale = 0.6 + (depthFactor * 0.6); // Ranges from 0.6 to 1.2
         l.group.scale.set(targetScale, targetScale, 1);
         
-        // Brightness & Opacity: Dimmer/blurrier in the back, bright in the front
-        l.group.children.forEach(child => {
-            if (child.material) {
-                if (child.userData && child.userData.isIsland) {
-                    // Darken the island texture if it's behind the reactor
-                    const brightness = 0.4 + (depthFactor * 0.6); // 0.4 to 1.0
-                    child.material.color.setRGB(brightness, brightness, brightness);
-                } else {
-                    // Soften the aura and text label in the background
-                    child.material.opacity = 0.2 + (depthFactor * 0.8);
-                }
-            }
-        });
+        // Removed brightness and opacity adjustments to keep islands solid and fully glowing
     });
 
     // Slow global rotation for the whole universe
