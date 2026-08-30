@@ -121,7 +121,7 @@ const tobyNeonSprite = new THREE.Sprite(tobyNeonMat);
 tobyNeonSprite.scale.set(36.5, 36.5, 1); // Slightly larger to create an outer glow/highlight
 tobyNeonSprite.position.y = 23;
 coreGroup.add(tobyNeonSprite);
-// --- SOLID ARC REACTOR (Backdrop for Toby) ---
+// --- MID-CENTURY MODERN ATOMIC REACTOR (Backdrop for Toby) ---
 const rings = []; // We will still push rotating elements here to animate them
 const reactorGroup = new THREE.Group();
 reactorGroup.position.y = 23; 
@@ -129,7 +129,7 @@ reactorGroup.position.y = 23;
 reactorGroup.position.z = -10;
 coreGroup.add(reactorGroup);
 
-const reactorColors = {
+const mcmColors = {
     cyan: 0x00ffff,
     lime: 0xaaff00,
     gold: 0xffcc00,
@@ -137,87 +137,76 @@ const reactorColors = {
     dark: 0x001111
 };
 
-// 1. Solid Base Plate
-const baseGeo = new THREE.CylinderGeometry(28, 28, 2, 64);
-const baseMat = new THREE.MeshBasicMaterial({ color: reactorColors.dark });
-const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-baseMesh.rotation.x = Math.PI / 2;
-reactorGroup.add(baseMesh);
+// 1. Central Nucleus (Solid Teal Sphere)
+const nucleusGeo = new THREE.SphereGeometry(6, 32, 32);
+const nucleusMat = new THREE.MeshBasicMaterial({ color: mcmColors.teal });
+const nucleus = new THREE.Mesh(nucleusGeo, nucleusMat);
+reactorGroup.add(nucleus);
 
-// 2. Glowing Inner Core
-const coreGeo = new THREE.CylinderGeometry(8, 8, 3, 32);
-const coreMat = new THREE.MeshBasicMaterial({ 
-    color: reactorColors.cyan,
-    transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending 
-});
-const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-coreMesh.rotation.x = Math.PI / 2;
-reactorGroup.add(coreMesh);
-
-// 3. Inner Ring (Gold)
-const innerRingGeo = new THREE.TorusGeometry(12, 0.8, 16, 64);
-const innerRingMat = new THREE.MeshBasicMaterial({ color: reactorColors.gold });
-const innerRing = new THREE.Mesh(innerRingGeo, innerRingMat);
-reactorGroup.add(innerRing);
-innerRing.userData = { rx: 0, ry: 0, rz: 0.02 };
-rings.push(innerRing);
-
-// 4. Middle Slotted Ring (Lime/Cyan wireframe)
-const midRingGeo = new THREE.TorusGeometry(18, 1.5, 8, 24);
-const midRingMat = new THREE.MeshBasicMaterial({ 
-    color: reactorColors.lime, 
-    wireframe: true, transparent: true, opacity: 0.6 
-});
-const midRing = new THREE.Mesh(midRingGeo, midRingMat);
-reactorGroup.add(midRing);
-midRing.userData = { rx: 0, ry: 0, rz: -0.01 };
-rings.push(midRing);
-
-// 5. Outer Ring
-const outerRingGeo = new THREE.TorusGeometry(26, 1.5, 16, 64);
-const outerRingMat = new THREE.MeshBasicMaterial({ color: reactorColors.cyan });
-const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
-reactorGroup.add(outerRing);
-
-// 6. 10 Outer Magnetic Coils
-const coilsGroup = new THREE.Group();
-const coilCount = 10;
-const coilGeo = new THREE.BoxGeometry(4, 8, 4);
-const coilMat = new THREE.MeshBasicMaterial({ color: reactorColors.teal });
-const glowMat = new THREE.MeshBasicMaterial({ color: reactorColors.gold, wireframe: true });
-
-for (let i = 0; i < coilCount; i++) {
-    const angle = (i / coilCount) * Math.PI * 2;
-    const coil = new THREE.Mesh(coilGeo, coilMat);
-    coil.position.x = Math.cos(angle) * 26;
-    coil.position.y = Math.sin(angle) * 26;
-    coil.rotation.z = angle + Math.PI / 2;
+// 2. Atomic Orbit Rings (Thin Gold)
+for(let i = 0; i < 3; i++) {
+    const orbitGeo = new THREE.TorusGeometry(22, 0.3, 16, 64);
+    const orbitMat = new THREE.MeshBasicMaterial({ color: mcmColors.gold });
+    const orbit = new THREE.Mesh(orbitGeo, orbitMat);
     
-    const glow = new THREE.Mesh(coilGeo, glowMat);
-    glow.scale.set(1.1, 1.1, 1.1);
-    coil.add(glow);
+    // Rotate them to form an atom shape (0, 60, 120 degrees)
+    orbit.rotation.x = Math.PI / 2; // Lay flat first
+    orbit.rotation.y = (i * Math.PI) / 3;
+    
+    // Animate them independently
+    const orbitPivot = new THREE.Group();
+    orbitPivot.add(orbit);
+    
+    // Add small electron spheres on the rings
+    const electronGeo = new THREE.SphereGeometry(2, 16, 16);
+    const electronMat = new THREE.MeshBasicMaterial({ 
+        color: mcmColors.cyan,
+        transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending 
+    });
+    const electron = new THREE.Mesh(electronGeo, electronMat);
+    electron.position.x = 22;
+    orbit.add(electron);
 
-    coilsGroup.add(coil);
+    reactorGroup.add(orbitPivot);
+    // Spin the pivots
+    orbitPivot.userData = { rx: 0, ry: (i % 2 === 0 ? 0.015 : -0.01), rz: 0.02 };
+    rings.push(orbitPivot);
 }
-reactorGroup.add(coilsGroup);
-coilsGroup.userData = { rx: 0, ry: 0, rz: 0.005 };
-rings.push(coilsGroup);
 
-// 7. 3 Inner Prongs
-const prongsGroup = new THREE.Group();
-const prongGeo = new THREE.BoxGeometry(2, 6, 2);
-const prongMat = new THREE.MeshBasicMaterial({ color: 0xffffff }); // Bright white
-for (let i = 0; i < 3; i++) {
-    const angle = (i / 3) * Math.PI * 2;
-    const prong = new THREE.Mesh(prongGeo, prongMat);
-    prong.position.x = Math.cos(angle) * 10;
-    prong.position.y = Math.sin(angle) * 10;
-    prong.rotation.z = angle + Math.PI / 2;
-    prongsGroup.add(prong);
+// 3. Sputnik Starburst Rods & Tips
+const sputnikGroup = new THREE.Group();
+const numRods = 12;
+const rodGeo = new THREE.CylinderGeometry(0.3, 0.3, 34, 8);
+const rodMat = new THREE.MeshBasicMaterial({ color: mcmColors.gold });
+
+const tipColors = [mcmColors.cyan, mcmColors.lime];
+
+for (let i = 0; i < numRods; i++) {
+    // Generate flat starburst pointing outward on the XY plane
+    const angle = (i / numRods) * Math.PI * 2;
+    
+    // Rod
+    const rod = new THREE.Mesh(rodGeo, rodMat);
+    rod.position.x = Math.cos(angle) * 17; // Half of 34 is 17
+    rod.position.y = Math.sin(angle) * 17;
+    rod.rotation.z = angle + Math.PI / 2;
+    sputnikGroup.add(rod);
+
+    // Glowing tip at the end of the rod
+    const tipGeo = new THREE.SphereGeometry(2.5, 16, 16);
+    const tipMat = new THREE.MeshBasicMaterial({ 
+        color: tipColors[i % 2],
+        transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending 
+    });
+    const tip = new THREE.Mesh(tipGeo, tipMat);
+    tip.position.x = Math.cos(angle) * 34;
+    tip.position.y = Math.sin(angle) * 34;
+    sputnikGroup.add(tip);
 }
-reactorGroup.add(prongsGroup);
-prongsGroup.userData = { rx: 0, ry: 0, rz: -0.015 };
-rings.push(prongsGroup);
+
+reactorGroup.add(sputnikGroup);
+sputnikGroup.userData = { rx: 0, ry: 0, rz: 0.005 }; // Slowly spin the starburst
+rings.push(sputnikGroup);
 
 // --- HELPER: TEXT SPRITE FOR LABELS ---
 function createTextLabel(text, colorHex) {
