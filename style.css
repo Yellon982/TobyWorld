@@ -1,0 +1,188 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000;
+    font-family: 'Share Tech Mono', monospace;
+    color: #00ffff;
+}
+
+#ui-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through to the 3D canvas if needed */
+    z-index: 10;
+}
+
+.hud-panel {
+    position: absolute;
+    padding: 20px;
+    background: rgba(0, 20, 40, 0.4);
+    border: 1px solid #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2), inset 0 0 10px rgba(0, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    text-shadow: 0 0 5px #00ffff;
+    pointer-events: auto; /* Re-enable clicks for the UI panels */
+}
+
+.top-left {
+    top: 30px;
+    left: 30px;
+    width: 300px;
+}
+
+.top-right {
+    top: 30px;
+    right: 30px;
+    width: 250px;
+}
+
+.center-right {
+    top: 50%;
+    right: 30px;
+    transform: translateY(-50%);
+    width: 280px;
+    z-index: 20;
+}
+
+.bottom-left {
+    bottom: 30px;
+    left: 30px;
+    width: 300px;
+}
+
+.cyber-button {
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    width: 100%;
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
+}
+
+.cyber-button:hover {
+    background: rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+    text-shadow: 0 0 5px #fff;
+}
+
+h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.5);
+    padding-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+p {
+    font-size: 0.9rem;
+    margin: 8px 0;
+    letter-spacing: 1px;
+}
+
+.status-ok {
+    color: #00ff88;
+    text-shadow: 0 0 5px #00ff88;
+}
+
+.loreland-item {
+    font-size: 0.85rem;
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* --- CENTER CORE UI --- */
+#center-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 15;
+}
+
+.toby-glow {
+    position: absolute;
+    top: -20px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(0,255,100,0.4) 0%, rgba(0,0,0,0) 60%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+#toby-logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 5px;
+    animation: hoverPulse 3s ease-in-out infinite;
+}
+
+.toby-title {
+    font-family: 'Share Tech Mono', monospace; /* A more futuristic squarish font would be better, but we'll stick to this and style it */
+    font-size: 4.5rem;
+    line-height: 0.9;
+    color: #ffffff;
+    margin: 0;
+    text-transform: uppercase;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.5);
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.core-dots {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.core-stats {
+    font-size: 1.1rem;
+    color: #7ab4ff;
+    letter-spacing: 4px;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(122, 180, 255, 0.5);
+}
+
+@keyframes hoverPulse {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Scanline effect */
+body::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 20;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
