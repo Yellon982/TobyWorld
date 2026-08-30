@@ -121,95 +121,93 @@ const tobyNeonSprite = new THREE.Sprite(tobyNeonMat);
 tobyNeonSprite.scale.set(36.5, 36.5, 1); // Slightly larger to create an outer glow/highlight
 tobyNeonSprite.position.y = 23;
 coreGroup.add(tobyNeonSprite);
-// --- JARVIS HOLOGRAPHIC HUD REACTOR (Centered on Toby World) ---
-const rings = []; // We will still push rotating elements here to animate them
+// --- LORELAND MASTER CORE (3D High-Tech) ---
+const rings = []; 
 const reactorGroup = new THREE.Group();
-// Centered more towards the "TOBY WORLD" text rather than just the frog
-reactorGroup.position.y = 5; 
-reactorGroup.position.z = -15; // Push behind text and sprite
+reactorGroup.position.y = 0; // Centered exactly on "TOBY WORLD" text
+reactorGroup.position.z = -15; // Behind the UI text
 coreGroup.add(reactorGroup);
 
-const jarvisColors = {
-    cyan: 0x00ffff,
-    blue: 0x0088ff,
-    white: 0xffffff,
-    glow: 0x44aaff
-};
+// The 9 main Loreland colors
+const loreColors = [
+    0xff4400, 0x66ccff, 0x22ff55, 
+    0x33ff99, 0x9933ff, 0x00ccff, 
+    0xffcc00, 0x0088ff, 0xcc00ff
+];
 
-// 1. Inner Data Ring (Dashed wireframe)
-const innerDashedGeo = new THREE.RingGeometry(14, 17, 32, 1, 0, Math.PI * 2);
-const innerDashedMat = new THREE.MeshBasicMaterial({ 
-    color: jarvisColors.cyan, 
-    wireframe: true, 
-    transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending 
-});
-const innerDashed = new THREE.Mesh(innerDashedGeo, innerDashedMat);
-reactorGroup.add(innerDashed);
-innerDashed.userData = { rx: 0, ry: 0, rz: 0.02 }; // Fast clockwise
-rings.push(innerDashed);
+// All cylinders rotated to face forward (rotation.x = Math.PI/2)
 
-// 2. Solid Inner Ring
-const innerSolidGeo = new THREE.RingGeometry(19, 19.5, 64);
-const innerSolidMat = new THREE.MeshBasicMaterial({ 
-    color: jarvisColors.blue, 
-    transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending 
-});
-const innerSolid = new THREE.Mesh(innerSolidGeo, innerSolidMat);
-reactorGroup.add(innerSolid);
-innerSolid.userData = { rx: 0, ry: 0, rz: -0.005 }; // Slow counter-clockwise
-rings.push(innerSolid);
+// 1. Heavy Hexagonal Base Plate (Backdrop)
+const baseGeo = new THREE.CylinderGeometry(35, 35, 2, 6);
+const baseMat = new THREE.MeshBasicMaterial({ color: 0x001122, wireframe: true, transparent: true, opacity: 0.5 });
+const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+baseMesh.rotation.x = Math.PI / 2;
+reactorGroup.add(baseMesh);
+baseMesh.userData = { rx: 0, ry: 0, rz: 0.002 };
+rings.push(baseMesh);
 
-// 3. Middle Segmented Ring (The classic Jarvis tick marks)
-const tickGroup = new THREE.Group();
-const tickCount = 36;
-const tickGeo = new THREE.PlaneGeometry(0.8, 4);
-const tickMat = new THREE.MeshBasicMaterial({ color: jarvisColors.cyan, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending });
-for (let i = 0; i < tickCount; i++) {
-    const angle = (i / tickCount) * Math.PI * 2;
-    const tick = new THREE.Mesh(tickGeo, tickMat);
-    tick.position.x = Math.cos(angle) * 23;
-    tick.position.y = Math.sin(angle) * 23;
-    tick.rotation.z = angle + Math.PI/2;
-    tickGroup.add(tick);
+// 2. The 9 Colored Energy Pillars
+const pillarsGroup = new THREE.Group();
+const pillarGeo = new THREE.BoxGeometry(3, 8, 3);
+for (let i = 0; i < 9; i++) {
+    const angle = (i / 9) * Math.PI * 2;
+    const pMat = new THREE.MeshBasicMaterial({ 
+        color: loreColors[i], 
+        transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending 
+    });
+    const pillar = new THREE.Mesh(pillarGeo, pMat);
+    pillar.position.x = Math.cos(angle) * 22;
+    pillar.position.y = Math.sin(angle) * 22;
+    pillar.rotation.z = angle + Math.PI / 2;
+    
+    // Add bright inner core to each pillar
+    const coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const pCore = new THREE.Mesh(new THREE.BoxGeometry(1, 9, 1), coreMat);
+    pillar.add(pCore);
+
+    pillarsGroup.add(pillar);
 }
-reactorGroup.add(tickGroup);
-tickGroup.userData = { rx: 0, ry: 0, rz: 0.01 };
-rings.push(tickGroup);
+reactorGroup.add(pillarsGroup);
+pillarsGroup.userData = { rx: 0, ry: 0, rz: -0.01 };
+rings.push(pillarsGroup);
 
-// 4. Outer Holographic Data Ring (Broken 3/4 circle)
-const outerRingGeo = new THREE.RingGeometry(27, 30, 64, 1, 0, Math.PI * 1.5);
-const outerRingMat = new THREE.MeshBasicMaterial({ 
-    color: jarvisColors.white, 
-    transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending 
-});
+// 3. Central Octagonal Hub
+const hubGeo = new THREE.CylinderGeometry(12, 12, 4, 8);
+const hubMat = new THREE.MeshBasicMaterial({ color: 0x003344, transparent: true, opacity: 0.8 });
+const hub = new THREE.Mesh(hubGeo, hubMat);
+hub.rotation.x = Math.PI / 2;
+reactorGroup.add(hub);
+
+// 4. Central Glowing Core
+const coreGeo = new THREE.CylinderGeometry(6, 6, 5, 32);
+const coreMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
+const core = new THREE.Mesh(coreGeo, coreMat);
+core.rotation.x = Math.PI / 2;
+reactorGroup.add(core);
+
+// 5. Outer Protective Ring
+const outerRingGeo = new THREE.TorusGeometry(32, 1.5, 8, 64);
+const outerRingMat = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true, transparent: true, opacity: 0.6 });
 const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
 reactorGroup.add(outerRing);
-outerRing.userData = { rx: 0, ry: 0, rz: -0.015 };
+outerRing.userData = { rx: 0, ry: 0, rz: 0.015 };
 rings.push(outerRing);
 
-// 5. Outer Thin Calibration Ring
-const outerThinGeo = new THREE.RingGeometry(33, 33.3, 64);
-const outerThinMat = new THREE.MeshBasicMaterial({ 
-    color: jarvisColors.cyan, 
-    transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending 
-});
-const outerThin = new THREE.Mesh(outerThinGeo, outerThinMat);
-reactorGroup.add(outerThin);
-outerThin.userData = { rx: 0, ry: 0, rz: 0.002 };
-rings.push(outerThin);
-
-// 6. Targeting Reticles / Brackets on the far outside
-const bracketGroup = new THREE.Group();
-const bracketGeo = new THREE.RingGeometry(36, 38, 32, 1, 0, Math.PI / 4); // 45 degree arc
-const bracketMat = new THREE.MeshBasicMaterial({ color: jarvisColors.blue, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
-for (let i = 0; i < 3; i++) {
-    const bracket = new THREE.Mesh(bracketGeo, bracketMat);
-    bracket.rotation.z = (i * Math.PI * 2 / 3);
-    bracketGroup.add(bracket);
+// 6. Data Stream Ring (Floating fragments)
+const dataGroup = new THREE.Group();
+const dataGeo = new THREE.PlaneGeometry(2, 4);
+const dataMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending });
+for (let i = 0; i < 18; i++) {
+    const angle = (i / 18) * Math.PI * 2;
+    const fragment = new THREE.Mesh(dataGeo, dataMat);
+    fragment.position.x = Math.cos(angle) * 16;
+    fragment.position.y = Math.sin(angle) * 16;
+    fragment.rotation.z = angle + Math.PI / 2;
+    dataGroup.add(fragment);
 }
-reactorGroup.add(bracketGroup);
-bracketGroup.userData = { rx: 0, ry: 0, rz: 0.008 };
-rings.push(bracketGroup);
+reactorGroup.add(dataGroup);
+dataGroup.userData = { rx: 0, ry: 0, rz: -0.025 };
+rings.push(dataGroup);
 
 // --- HELPER: TEXT SPRITE FOR LABELS ---
 function createTextLabel(text, colorHex) {
