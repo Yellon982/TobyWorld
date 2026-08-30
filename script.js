@@ -159,7 +159,7 @@ const outerRingGeo = new THREE.RingGeometry(30, 32, 64);
 const outerRingMat = new THREE.MeshBasicMaterial({ color: reactorColors.cyan, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
 const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
 reactorGroup.add(outerRing);
-outerRing.userData = { rx: 0, ry: 0, rz: 0.005 };
+outerRing.userData = { rx: 0, ry: 0, rz: 0.001 };
 rings.push(outerRing);
 
 // 3. The 10 Dark Blocks
@@ -173,7 +173,7 @@ for(let i=0; i<blockCount; i++) {
     blocksGroup.add(block);
 }
 reactorGroup.add(blocksGroup);
-blocksGroup.userData = { rx: 0, ry: 0, rz: 0.01 };
+blocksGroup.userData = { rx: 0, ry: 0, rz: 0.002 };
 rings.push(blocksGroup);
 
 // 4. Inner Dashed Ring
@@ -181,14 +181,14 @@ const dashedGeo = new THREE.RingGeometry(17, 18, 32, 1, 0, Math.PI * 2);
 const dashedMat = new THREE.MeshBasicMaterial({ color: reactorColors.white, wireframe: true, transparent: true, opacity: 0.6 });
 const dashedRing = new THREE.Mesh(dashedGeo, dashedMat);
 reactorGroup.add(dashedRing);
-dashedRing.userData = { rx: 0, ry: 0, rz: -0.015 };
+dashedRing.userData = { rx: 0, ry: 0, rz: -0.003 };
 rings.push(dashedRing);
 
 // 5. Center Red Patience Triangle
 const patienceMesh = createFlatIcon(texPatience, 32);
 reactorGroup.add(patienceMesh);
 // Spin it slowly
-patienceMesh.userData = { rx: 0, ry: 0, rz: 0.002 };
+patienceMesh.userData = { rx: 0, ry: 0, rz: 0.0005 };
 rings.push(patienceMesh);
 
 // 6. Orbiting Small Icons (Toby, Taboshi, Sato)
@@ -211,7 +211,7 @@ icons.forEach((ic, idx) => {
 });
 
 reactorGroup.add(iconGroup);
-iconGroup.userData = { rx: 0, ry: 0, rz: -0.01 }; // Orbit counter-clockwise
+iconGroup.userData = { rx: 0, ry: 0, rz: -0.002 }; // Orbit counter-clockwise
 rings.push(iconGroup);
 
 // --- HELPER: TEXT SPRITE FOR LABELS ---
