@@ -170,9 +170,9 @@ function createAura(colorHex) {
     
     // Radial gradient from color to black (black is transparent in additive blending)
     const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
-    // Soft, smooth falloff for a massive cosmic glow
+    // Tighter falloff for a more controlled glow
     gradient.addColorStop(0, colorHex);
-    gradient.addColorStop(0.2, colorHex);
+    gradient.addColorStop(0.5, colorHex);
     gradient.addColorStop(1, '#000000');
     
     context.fillStyle = gradient;
@@ -183,11 +183,11 @@ function createAura(colorHex) {
         map: texture, 
         transparent: true,
         blending: THREE.AdditiveBlending,
-        opacity: 0.85,
+        opacity: 0.7, // Slightly softer opacity
         depthWrite: false
     });
     const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(75, 75, 1); // Massive aura behind the island
+    sprite.scale.set(40, 40, 1); // Significantly reduced aura scale
     return sprite;
 }
 
