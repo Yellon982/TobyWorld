@@ -152,18 +152,65 @@ function createSphericalRing(radius, tube, dashCount, color, opacity, speedX, sp
     return group;
 }
 
-// 1. Center Glowing Core (Icosahedron / Hex feel)
-const coreGeo = new THREE.IcosahedronGeometry(14, 1);
-const coreMat = new THREE.MeshBasicMaterial({ color: darkHud, wireframe: true, transparent: true, opacity: 0.6 });
-const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-reactorGroup.add(coreMesh);
-coreMesh.userData = { rx: 0.002, ry: -0.001, rz: 0.003 };
-rings.push(coreMesh);
+// 1. Center Solid Swirling Sphere Core (Taboshi, Sato, OGToby, Patience colors)
+const swirlShader = {
+    uniforms: {
+        time: { value: 0 }
+    },
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform float time;
+        varying vec2 vUv;
+        
+        void main() {
+            // Convert UV to centered coordinates
+            vec2 p = vUv * 2.0 - 1.0;
+            float t = time;
+            
+            // Generate fluid noise/swirl patterns
+            float swirl1 = sin(p.x * 6.0 + t) * cos(p.y * 6.0 + t);
+            float swirl2 = sin(p.x * 4.0 - t * 1.5 + p.y * 3.0);
+            float swirl3 = cos(p.x * 5.0 + p.y * 5.0 - t);
+            
+            // The 4 requested colors
+            vec3 colGreen = vec3(0.0, 0.9, 0.3); // Taboshi
+            vec3 colCyan  = vec3(0.0, 0.8, 1.0); // Sato
+            vec3 colBlue  = vec3(0.1, 0.2, 0.9); // OGToby
+            vec3 colRed   = vec3(0.9, 0.1, 0.1); // Patience
+            
+            // Mix colors organically based on the swirl math
+            vec3 col = mix(colGreen, colCyan, (sin(swirl1 * 3.0) + 1.0) * 0.5);
+            col = mix(col, colBlue, (cos(swirl2 * 3.0) + 1.0) * 0.5);
+            col = mix(col, colRed, (sin(swirl3 * 3.0 + swirl1) + 1.0) * 0.5);
+            
+            gl_FragColor = vec4(col, 1.0);
+        }
+    `
+};
 
-const coreInner = new THREE.Mesh(new THREE.IcosahedronGeometry(10, 0), new THREE.MeshBasicMaterial({ color: hudColor, wireframe: true, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending }));
-reactorGroup.add(coreInner);
-coreInner.userData = { rx: -0.004, ry: 0.002, rz: -0.001 };
-rings.push(coreInner);
+const coreGeo = new THREE.SphereGeometry(16, 64, 64);
+const coreMat = new THREE.ShaderMaterial({
+    uniforms: swirlShader.uniforms,
+    vertexShader: swirlShader.vertexShader,
+    fragmentShader: swirlShader.fragmentShader,
+    transparent: true,
+    opacity: 0.95
+});
+const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+coreMesh.position.z = -18; // Push firmly behind Toby and the text
+coreMesh.position.y = 5; // Center it nicely behind the UI and frog
+coreMesh.onBeforeRender = () => {
+    coreMat.uniforms.time.value += 0.005;
+};
+reactorGroup.add(coreMesh);
+coreMesh.userData = { rx: 0.001, ry: -0.002, rz: 0.0015 };
+rings.push(coreMesh);
 
 // 2. Intersecting Spherical Data Rings (Gyroscope)
 // radius, tube, dashCount, color, opacity, speedX, speedY, speedZ, initRotX, initRotY
