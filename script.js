@@ -190,40 +190,17 @@ rings.push(gyroGroup);
 // 4. Floating Orbiting Images
 const imagesGroup = new THREE.Group();
 const imageUrls = [
-    'public/icon_toby.png',
-    'public/icon_patience.png',
-    'public/icon_spiral.jpg',
-    'public/icon_leaf.png'
+    'public/toby_trans.png',
+    'public/patience_trans.png',
+    'public/spiral_trans.png',
+    'public/leaf_trans.png'
 ];
 
 imageUrls.forEach((url, i) => {
     textureLoader.load(url, (texture) => {
-        const isJpg = url.endsWith('.jpg');
-        let mat;
-        
-        if (isJpg) {
-            const canvas = document.createElement('canvas');
-            const img = texture.image;
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
-            for(let j=0; j<imgData.data.length; j+=4) {
-                const r = imgData.data[j], g = imgData.data[j+1], b = imgData.data[j+2];
-                // Remove the light blue/white background
-                if(r > 170 && g > 180 && b > 190) {
-                    imgData.data[j+3] = 0; // Make transparent
-                }
-            }
-            ctx.putImageData(imgData, 0, 0);
-            const tex = new THREE.CanvasTexture(canvas);
-            mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
-        } else {
-            mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
-        }
-        
+        const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
         const mesh = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), mat);
+        
         // Distribute spherically
         const phi = Math.acos(-1 + (2 * i) / 4);
         const theta = Math.sqrt(4 * Math.PI) * phi;
