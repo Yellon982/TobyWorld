@@ -71,10 +71,11 @@ body, html {
     box-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
 }
 
-.cyber-button:hover {
+.cyber-button:hover, .cyber-button:focus {
     background: rgba(0, 255, 255, 0.3);
     box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
     text-shadow: 0 0 5px #fff;
+    outline: none;
 }
 
 h3 {
@@ -101,6 +102,17 @@ p {
     margin: 5px 0;
     display: flex;
     justify-content: space-between;
+    text-decoration: none;
+    transition: background 0.2s;
+    padding: 2px 5px;
+    border: 1px solid transparent;
+}
+
+.loreland-item:hover, .loreland-item:focus {
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid rgba(0, 255, 255, 0.5);
+    outline: none;
+    cursor: pointer;
 }
 
 /* --- CENTER CORE UI --- */

@@ -124,15 +124,15 @@
         const islandColor = urlParams.get('color') || '#00ffff';
 
         // Setup UI
-        let displayName = islandId.toUpperCase();
-        if(islandId === "ThePond") displayName = "THE POND";
-        
-        document.getElementById('land-name').innerText = displayName;
+        const nameDisplay = islandId.toUpperCase() === "THEPOND" ? "THE POND" : islandId.toUpperCase();
+        document.getElementById('land-name').innerText = nameDisplay;
         document.getElementById('land-name').style.color = islandColor;
-        document.getElementById('land-name').style.textShadow = `0 0 15px ${islandColor}`;
+        document.getElementById('land-name').style.textShadow = `0 0 20px ${islandColor}, 0 0 50px ${islandColor}`;
         
-        document.getElementById('land-image').src = `public/${islandId}.png`;
-        document.getElementById('land-image').style.filter = `drop-shadow(0 0 30px ${islandColor})`;
+        const imgElement = document.getElementById('land-image');
+        imgElement.src = `public/${islandId}.png`;
+        imgElement.alt = `Detailed 3D pixel illustration of the ${nameDisplay} loreland`;
+        imgElement.style.filter = `drop-shadow(0 0 20px ${islandColor})`;
 
         // --- WEB3 DATA FETCHING ---
         const CONTRACT_ADDRESS = "0x0495601Af6f86efb14C9D478eA46b2Aa09cB164A";

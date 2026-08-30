@@ -271,14 +271,22 @@ for (let i = 0; i < numLorelands; i++) {
     lorelandsGroup.add(islandGroup);
     lorelands.push(lorelandData);
 
-    // Add to UI
+    // Add to UI as an accessible link
     let displayName = islandName.toUpperCase();
     if (islandName === "ThePond") displayName = "THE POND";
-    const uiItem = document.createElement('div');
-    uiItem.className = 'loreland-item';
+    const encodedColor = encodeURIComponent(colorHex);
+    
+    const uiItem = document.createElement('a');
+    uiItem.href = `land.html?island=${islandName}&color=${encodedColor}`;
+    uiItem.className = 'loreland-item accessible-link';
+    uiItem.setAttribute('aria-label', `Travel to ${displayName}. Supply remaining: ${island.count}`);
     uiItem.innerHTML = `<span style="color:${colorHex}; text-shadow: 0 0 5px ${colorHex};">${displayName}</span> <span style="color:#00ff88;">[${island.count}]</span>`;
     uiList.appendChild(uiItem);
 }
+
+// Make the 3D Canvas accessible
+renderer.domElement.setAttribute('role', 'img');
+renderer.domElement.setAttribute('aria-label', 'An interactive 3D solar system of TobyWorld lore lands orbiting a central reactor core.');
 
 
 // --- GRID / BACKGROUND SCANLINES (Optional Space Dust) ---
