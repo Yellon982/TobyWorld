@@ -94,7 +94,8 @@ function createCenterUISprite() {
     texture.minFilter = THREE.LinearFilter;
     const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
     const sprite = new THREE.Sprite(mat);
-    sprite.scale.set(70, 70, 1);
+    sprite.scale.set(58, 58, 1);
+    sprite.position.z = 25;
     return sprite;
 }
 
@@ -104,7 +105,8 @@ coreGroup.add(centerUISprite);
 const tobyTexture = textureLoader.load('public/Toby.png');
 const tobyMat = new THREE.SpriteMaterial({ map: tobyTexture, transparent: true });
 const tobySprite = new THREE.Sprite(tobyMat);
-tobySprite.scale.set(35, 35, 1); // 200% bigger
+tobySprite.scale.set(29, 29, 1);
+  tobySprite.position.z = 25; // 200% bigger
 tobySprite.userData = { isCenterToby: true };
 tobySprite.position.y = 23; // Adjusted upwards to clear text
 coreGroup.add(tobySprite);
@@ -118,7 +120,8 @@ const tobyNeonMat = new THREE.SpriteMaterial({
     opacity: 0.7
 });
 const tobyNeonSprite = new THREE.Sprite(tobyNeonMat);
-tobyNeonSprite.scale.set(36.5, 36.5, 1); // Slightly larger to create an outer glow/highlight
+tobyNeonSprite.scale.set(30, 30, 1);
+  tobyNeonSprite.position.z = 24.5; // Slightly larger to create an outer glow/highlight
 tobyNeonSprite.position.y = 23;
 coreGroup.add(tobyNeonSprite);
 // --- FUTURISTIC TOBYWORLD REACTOR CORE ---
@@ -281,8 +284,8 @@ const tobyHaloMat = new THREE.SpriteMaterial({
     opacity: 0.7 
 });
 const tobyHalo = new THREE.Sprite(tobyHaloMat);
-tobyHalo.scale.set(60, 60, 1);
-tobyHalo.position.set(0, 23, -2); // Behind Toby but in front of reactor
+tobyHalo.scale.set(50, 50, 1);
+tobyHalo.position.set(0, 23, 24); // Behind Toby but in front of reactor
 coreGroup.add(tobyHalo);
 // --- HELPER: TEXT SPRITE FOR LABELS ---
 function createTextLabel(text, colorHex) {
