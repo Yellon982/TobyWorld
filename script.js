@@ -121,87 +121,99 @@ const tobyNeonSprite = new THREE.Sprite(tobyNeonMat);
 tobyNeonSprite.scale.set(36.5, 36.5, 1); // Slightly larger to create an outer glow/highlight
 tobyNeonSprite.position.y = 23;
 coreGroup.add(tobyNeonSprite);
-// --- CYBER-HEX HUD REACTOR ---
+// --- SPHERICAL CYBER-HEX HUD REACTOR ---
 const rings = []; 
 const reactorGroup = new THREE.Group();
-reactorGroup.position.y = 0; 
-reactorGroup.position.z = -15; // Behind the UI text
+reactorGroup.position.y = 12; // Centered between frog and text
+reactorGroup.position.z = 0; // Wraps completely around Toby
 coreGroup.add(reactorGroup);
 
 const hudColor = 0x00ffff; // Cyan
 const darkHud = 0x004466; // Darker teal
+const glowWhite = 0xddeeff;
 
-// Function for dashed rings using RingGeometry
-function createDashedRing(radius, tube, dashCount, color, opacity, speed) {
+// Function for spherical dashed torus rings
+function createSphericalRing(radius, tube, dashCount, color, opacity, speedX, speedY, speedZ, initRotX, initRotY) {
     const group = new THREE.Group();
-    // To make dashCount gaps, we need 2 * dashCount segments
     const segmentLength = (Math.PI * 2) / (dashCount * 2);
     for(let i = 0; i < dashCount; i++) {
-        // Start angle = i * 2 * segmentLength, length = segmentLength
-        const ringGeo = new THREE.RingGeometry(radius, radius + tube, 16, 1, i * 2 * segmentLength, segmentLength);
+        // TorusGeometry(radius, tube, radialSegments, tubularSegments, arc)
+        const ringGeo = new THREE.TorusGeometry(radius, tube, 6, 32, segmentLength);
         const ringMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: opacity, blending: THREE.AdditiveBlending });
-        group.add(new THREE.Mesh(ringGeo, ringMat));
+        const mesh = new THREE.Mesh(ringGeo, ringMat);
+        mesh.rotation.z = i * 2 * segmentLength;
+        group.add(mesh);
     }
+    group.rotation.x = initRotX;
+    group.rotation.y = initRotY;
     reactorGroup.add(group);
-    group.userData = { rx: 0, ry: 0, rz: speed };
+    group.userData = { rx: speedX, ry: speedY, rz: speedZ };
     rings.push(group);
+    return group;
 }
 
-// 1. Center Hexagons (Solid & Wireframe)
-// CircleGeometry with 6 segments is a perfect hexagon
-const centerHexGeo = new THREE.CircleGeometry(8, 6);
-const centerHexMat = new THREE.MeshBasicMaterial({ color: darkHud, transparent: true, opacity: 0.5 });
-const centerHex = new THREE.Mesh(centerHexGeo, centerHexMat);
-reactorGroup.add(centerHex);
-centerHex.userData = { rx: 0, ry: 0, rz: -0.002 };
-rings.push(centerHex);
+// 1. Center Glowing Core (Icosahedron / Hex feel)
+const coreGeo = new THREE.IcosahedronGeometry(14, 1);
+const coreMat = new THREE.MeshBasicMaterial({ color: darkHud, wireframe: true, transparent: true, opacity: 0.6 });
+const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+reactorGroup.add(coreMesh);
+coreMesh.userData = { rx: 0.002, ry: -0.001, rz: 0.003 };
+rings.push(coreMesh);
 
-const hexWireGeo = new THREE.CircleGeometry(10, 6);
-const hexWireMat = new THREE.MeshBasicMaterial({ color: hudColor, transparent: true, opacity: 0.8, wireframe: true });
-const hexWire = new THREE.Mesh(hexWireGeo, hexWireMat);
-reactorGroup.add(hexWire);
-hexWire.userData = { rx: 0, ry: 0, rz: 0.002 };
-rings.push(hexWire);
+const coreInner = new THREE.Mesh(new THREE.IcosahedronGeometry(10, 0), new THREE.MeshBasicMaterial({ color: hudColor, wireframe: true, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending }));
+reactorGroup.add(coreInner);
+coreInner.userData = { rx: -0.004, ry: 0.002, rz: -0.001 };
+rings.push(coreInner);
 
-// 2. Crosshairs (Static vertical and horizontal lines)
-const crosshairGroup = new THREE.Group();
-const lineMat = new THREE.LineBasicMaterial({ color: hudColor, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending });
-const lineGeo1 = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-45, 0, 0), new THREE.Vector3(45, 0, 0)]);
-const lineGeo2 = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -45, 0), new THREE.Vector3(0, 45, 0)]);
-crosshairGroup.add(new THREE.Line(lineGeo1, lineMat));
-crosshairGroup.add(new THREE.Line(lineGeo2, lineMat));
-reactorGroup.add(crosshairGroup);
+// 2. Intersecting Spherical Data Rings (Gyroscope)
+// radius, tube, dashCount, color, opacity, speedX, speedY, speedZ, initRotX, initRotY
+createSphericalRing(24, 0.5, 12, hudColor, 0.8,  0.005, 0, 0, 0, 0); // Flat on XY
+createSphericalRing(28, 1.5, 6, darkHud, 0.5,   0, 0.003, 0, Math.PI/2, 0); // Flat on XZ
+createSphericalRing(32, 0.2, 36, hudColor, 0.6, 0, 0, 0.002, 0, Math.PI/2); // Flat on YZ
 
-// 3. Various Thin & Thick Data Rings
-// params: radius, tube, dashCount, color, opacity, speed
-createDashedRing(14, 0.5, 12, hudColor, 0.8, 0.005);
-createDashedRing(18, 3, 6, darkHud, 0.5, -0.003);
-createDashedRing(24, 0.2, 36, hudColor, 0.6, 0.001);
+// 3. Solid thin rings for structure
+const solidMat = new THREE.MeshBasicMaterial({ color: hudColor, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending });
+const ringXY = new THREE.Mesh(new THREE.TorusGeometry(36, 0.3, 8, 64), solidMat);
+const ringXZ = new THREE.Mesh(new THREE.TorusGeometry(36, 0.3, 8, 64), solidMat);
+ringXZ.rotation.x = Math.PI/2;
+const ringYZ = new THREE.Mesh(new THREE.TorusGeometry(36, 0.3, 8, 64), solidMat);
+ringYZ.rotation.y = Math.PI/2;
 
-// Solid thin ring
-const solidRingGeo = new THREE.RingGeometry(28, 28.5, 64);
-const solidRingMat = new THREE.MeshBasicMaterial({ color: hudColor, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending });
-const solidRing = new THREE.Mesh(solidRingGeo, solidRingMat);
-reactorGroup.add(solidRing);
-solidRing.userData = { rx: 0, ry: 0, rz: -0.0015 };
-rings.push(solidRing);
+const gyroGroup = new THREE.Group();
+gyroGroup.add(ringXY);
+gyroGroup.add(ringXZ);
+gyroGroup.add(ringYZ);
+reactorGroup.add(gyroGroup);
+gyroGroup.userData = { rx: -0.001, ry: 0.0015, rz: -0.0005 };
+rings.push(gyroGroup);
 
-createDashedRing(34, 1.5, 4, hudColor, 0.7, 0.004); // Large broken outer ring
-createDashedRing(38, 0.3, 72, hudColor, 0.5, -0.001); // Tiny outer tick marks
-
-// 4. Tech Nodes (Small glowing dots on the inner solid ring)
-const nodeGroup = new THREE.Group();
-const nodeGeo = new THREE.CircleGeometry(1, 16);
-const nodeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending });
-for (let i = 0; i < 4; i++) {
-    const node = new THREE.Mesh(nodeGeo, nodeMat);
-    const angle = i * Math.PI / 2 + Math.PI / 4;
-    node.position.set(Math.cos(angle) * 28.25, Math.sin(angle) * 28.25, 0);
-    nodeGroup.add(node);
+// 4. Floating Tech Hexagons (Satellites)
+const hexGroup = new THREE.Group();
+const hexGeo = new THREE.CylinderGeometry(4, 4, 0.5, 6);
+const hexMat = new THREE.MeshBasicMaterial({ color: glowWhite, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, wireframe: true });
+for(let i=0; i<6; i++) {
+    const hex = new THREE.Mesh(hexGeo, hexMat);
+    // Position on a sphere
+    const phi = Math.acos(-1 + (2 * i) / 6);
+    const theta = Math.sqrt(6 * Math.PI) * phi;
+    hex.position.setFromSphericalCoords(42, phi, theta);
+    hex.lookAt(0, 0, 0); // Face inward
+    hexGroup.add(hex);
 }
-reactorGroup.add(nodeGroup);
-nodeGroup.userData = { rx: 0, ry: 0, rz: -0.0015 };
-rings.push(nodeGroup);
+reactorGroup.add(hexGroup);
+hexGroup.userData = { rx: 0.003, ry: 0.002, rz: 0.004 };
+rings.push(hexGroup);
+
+// 5. 3D Crosshairs (Axes)
+const axesGroup = new THREE.Group();
+const lineMat = new THREE.LineBasicMaterial({ color: hudColor, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending });
+const lineGeoX = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-50, 0, 0), new THREE.Vector3(50, 0, 0)]);
+const lineGeoY = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -50, 0), new THREE.Vector3(0, 50, 0)]);
+const lineGeoZ = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, -50), new THREE.Vector3(0, 0, 50)]);
+axesGroup.add(new THREE.Line(lineGeoX, lineMat));
+axesGroup.add(new THREE.Line(lineGeoY, lineMat));
+axesGroup.add(new THREE.Line(lineGeoZ, lineMat));
+reactorGroup.add(axesGroup);
 // --- HELPER: TEXT SPRITE FOR LABELS ---
 function createTextLabel(text, colorHex) {
     const canvas = document.createElement('canvas');
