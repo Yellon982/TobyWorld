@@ -136,18 +136,26 @@ function createTextLabel(text, colorHex) {
     context.fillStyle = colorHex;
     context.textAlign = "center";
     context.textBaseline = "middle";
-    // Add a glow effect to text matching its aura
+    // Add a very strong neon glow effect to text
     context.shadowColor = colorHex;
-    context.shadowBlur = 10;
+    context.shadowBlur = 15;
     
     // Format "ThePond" -> "THE POND" nicely
     let displayName = text.toUpperCase();
     if (text === "ThePond") displayName = "THE POND";
     
+    // Draw multiple times for an intense bloom effect
+    context.fillText(displayName, canvas.width / 2, canvas.height / 2);
+    context.fillText(displayName, canvas.width / 2, canvas.height / 2);
+    context.shadowBlur = 5;
     context.fillText(displayName, canvas.width / 2, canvas.height / 2);
     
     const texture = new THREE.CanvasTexture(canvas);
-    const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+    const spriteMaterial = new THREE.SpriteMaterial({ 
+        map: texture, 
+        transparent: true,
+        blending: THREE.AdditiveBlending // Make text glow additively against the background
+    });
     const sprite = new THREE.Sprite(spriteMaterial);
     sprite.scale.set(30, 7.5, 1); // Scale it nicely
     return sprite;
@@ -162,8 +170,9 @@ function createAura(colorHex) {
     
     // Radial gradient from color to black (black is transparent in additive blending)
     const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
+    // Soft, smooth falloff for a massive cosmic glow
     gradient.addColorStop(0, colorHex);
-    gradient.addColorStop(0.3, colorHex);
+    gradient.addColorStop(0.2, colorHex);
     gradient.addColorStop(1, '#000000');
     
     context.fillStyle = gradient;
@@ -174,10 +183,11 @@ function createAura(colorHex) {
         map: texture, 
         transparent: true,
         blending: THREE.AdditiveBlending,
-        opacity: 0.25
+        opacity: 0.85,
+        depthWrite: false
     });
     const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(32, 32, 1); // Larger than the island to form an aura
+    sprite.scale.set(75, 75, 1); // Massive aura behind the island
     return sprite;
 }
 
