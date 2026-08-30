@@ -167,12 +167,12 @@ function createAura(colorHex) {
     canvas.width = 128;
     canvas.height = 128;
     
-    // Radial gradient from color to black (black is transparent in additive blending)
+    // Radial gradient from color to transparent black
     const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
     // Tighter falloff for a more controlled glow
     gradient.addColorStop(0, colorHex);
     gradient.addColorStop(0.5, colorHex);
-    gradient.addColorStop(1, '#000000');
+    gradient.addColorStop(1, 'rgba(0,0,0,0)'); // Transparent for NormalBlending
     
     context.fillStyle = gradient;
     context.fillRect(0, 0, 128, 128);
@@ -181,12 +181,12 @@ function createAura(colorHex) {
     const spriteMaterial = new THREE.SpriteMaterial({ 
         map: texture, 
         transparent: true,
-        blending: THREE.AdditiveBlending,
-        opacity: 0.7, // Slightly softer opacity
+        blending: THREE.NormalBlending, // Fix washout of background islands
+        opacity: 0.5, // Softer opacity since it's normal blending
         depthWrite: false
     });
     const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(40, 40, 1); // Significantly reduced aura scale
+    sprite.scale.set(40, 40, 1);
     return sprite;
 }
 
@@ -221,7 +221,7 @@ for (let i = 0; i < numLorelands; i++) {
     
     // 1. Create and add the Aura behind the island
     const auraSprite = createAura(colorHex);
-    auraSprite.position.z = -5; // Push it well behind the island so it never overlaps
+    auraSprite.position.z = -0.1; // Push it just slightly back to prevent z-fighting without perspective uncentering
     islandGroup.add(auraSprite);
 
     // 2. Load the island PNG as a sprite
