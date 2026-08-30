@@ -153,8 +153,7 @@ function createTextLabel(text, colorHex) {
     const texture = new THREE.CanvasTexture(canvas);
     const spriteMaterial = new THREE.SpriteMaterial({ 
         map: texture, 
-        transparent: true,
-        blending: THREE.AdditiveBlending // Make text glow additively against the background
+        transparent: true
     });
     const sprite = new THREE.Sprite(spriteMaterial);
     sprite.scale.set(30, 7.5, 1); // Scale it nicely
@@ -222,14 +221,14 @@ for (let i = 0; i < numLorelands; i++) {
     
     // 1. Create and add the Aura behind the island
     const auraSprite = createAura(colorHex);
-    auraSprite.position.z = -1; // Push it slightly back so it doesn't overlap front textures
+    auraSprite.position.z = -5; // Push it well behind the island so it never overlaps
     islandGroup.add(auraSprite);
 
     // 2. Load the island PNG as a sprite
     const texture = textureLoader.load(`public/${islandName}.png`);
     const islandMat = new THREE.SpriteMaterial({ 
         map: texture, 
-        transparent: true, 
+        transparent: false, // Opaque cutout prevents transparency sorting issues
         alphaTest: 0.5, // Discards transparent pixels, making the visible part completely solid
         depthWrite: true // Ensures it blocks objects behind it
     });
