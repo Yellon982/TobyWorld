@@ -428,7 +428,7 @@ window.addEventListener('pointerup', (event) => {
 window.addEventListener('pointermove', (event) => {
     const modal = document.getElementById('wallet-modal');
     if ((modal && modal.style.display === 'flex') || event.target.closest('#wallet-modal')) {
-        document.body.style.cursor = 'crosshair';
+        document.body.style.cursor = "url('public/cursor-default.png') 16 16, crosshair";
         return;
     }
 
@@ -447,9 +447,9 @@ window.addEventListener('pointermove', (event) => {
 
     const intersects = raycaster.intersectObjects(interactiveObjects);
     if (intersects.length > 0) {
-        document.body.style.cursor = 'cell';
+        document.body.style.cursor = "url('public/cursor-hover.png') 16 16, pointer";
     } else {
-        document.body.style.cursor = 'crosshair';
+        document.body.style.cursor = "url('public/cursor-default.png') 16 16, crosshair";
     }
 });
 
