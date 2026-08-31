@@ -33,18 +33,32 @@ function getLandsData() {
             }
         }
         
-        // Inject rarity percentages
+        // Calculate rarity scores and percentages
+        const scores = [];
         for (const key in data) {
             const attrs = data[key].attributes;
             data[key].rarity = {};
+            let totalRarityScore = 0;
+            
             if (attrs) {
                 for (const [traitType, traitValue] of Object.entries(attrs)) {
                     const count = traitsCount[traitType][traitValue];
-                    const percentage = ((count / totalLands) * 100).toFixed(1);
-                    data[key].rarity[traitType] = `${percentage}%`;
+                    const percentage = count / totalLands;
+                    data[key].rarity[traitType] = (percentage * 100).toFixed(1) + '%';
+                    
+                    // NFT Industry Standard Formula: Rarity Score = 1 / (Trait Value Frequency / Total Items)
+                    totalRarityScore += (1 / percentage);
                 }
             }
+            scores.push({ id: key, score: totalRarityScore });
         }
+        
+        // Sort by score descending to assign global rank (highest score = #1)
+        scores.sort((a, b) => b.score - a.score);
+        scores.forEach((item, index) => {
+            data[item.id].rank = index + 1;
+            data[item.id].totalLandsRanked = totalLands;
+        });
         
         return data;
     } catch (e) {

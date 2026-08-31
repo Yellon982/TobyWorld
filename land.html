@@ -143,6 +143,7 @@
     <div class="land-container">
         <img id="land-image" src="" alt="Land Image">
         <h1 class="land-title" id="land-name">LOADING...</h1>
+        <h3 id="land-rank" style="color: #ffaa00; text-align: center; margin-top: -10px; margin-bottom: 20px; font-family: 'Share Tech Mono', monospace; letter-spacing: 2px; text-shadow: 0 0 10px #ffaa00;"></h3>
         
         <div class="data-grid" id="data-display">
             <div class="data-box">
@@ -264,6 +265,10 @@
                 document.getElementById('trait-keeper').innerHTML = getTrait("KEEPER");
                 document.getElementById('trait-relic').innerHTML = getTrait("RELIC");
                 
+                if (metadata.rank && metadata.totalLandsRanked) {
+                    document.getElementById('land-rank').innerText = `GLOBAL RARITY RANK: #${metadata.rank} / ${metadata.totalLandsRanked}`;
+                }
+
                 // Extra metadata from the API
                 if (metadata.description) {
                     const loreBox = document.querySelector('.lore-box p');
