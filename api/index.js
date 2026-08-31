@@ -11,16 +11,45 @@ const DATA_FILE = path.join(__dirname, '..', 'data', 'lands.json');
 app.use(cors());
 app.use(express.json());
 
-// Utility to read data
+// Utility to read data and calculate statistical rarity
 function getLandsData() {
-    if (fs.existsSync(DATA_FILE)) {
-        try {
-            return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-        } catch (e) {
-            return {};
+    if (!fs.existsSync(DATA_FILE)) return {};
+    
+    try {
+        const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        const traitsCount = {};
+        let totalLands = 0;
+        
+        // Count trait occurrences
+        for (const key in data) {
+            totalLands++;
+            const attrs = data[key].attributes;
+            if (attrs) {
+                for (const [traitType, traitValue] of Object.entries(attrs)) {
+                    if (!traitsCount[traitType]) traitsCount[traitType] = {};
+                    if (!traitsCount[traitType][traitValue]) traitsCount[traitType][traitValue] = 0;
+                    traitsCount[traitType][traitValue]++;
+                }
+            }
         }
+        
+        // Inject rarity percentages
+        for (const key in data) {
+            const attrs = data[key].attributes;
+            data[key].rarity = {};
+            if (attrs) {
+                for (const [traitType, traitValue] of Object.entries(attrs)) {
+                    const count = traitsCount[traitType][traitValue];
+                    const percentage = ((count / totalLands) * 100).toFixed(1);
+                    data[key].rarity[traitType] = `${percentage}%`;
+                }
+            }
+        }
+        
+        return data;
+    } catch (e) {
+        return {};
     }
-    return {};
 }
 
 // 1. GET /api/lands (All lands)

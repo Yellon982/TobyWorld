@@ -231,27 +231,38 @@
                 const metadata = await response.json();
 
                 const getTrait = (type) => {
-                    // Our API pre-formats attributes into an object, but we handle both just in case
                     if (!metadata || !metadata.attributes) return "OFFLINE";
                     
+                    let val = "UNKNOWN";
+                    let keyFound = null;
+
                     if (Array.isArray(metadata.attributes)) {
                         const t = metadata.attributes.find(a => a.trait_type.toUpperCase() === type);
-                        return t ? t.value : "UNKNOWN";
-                    } else {
-                        // Using the object mapping from ingest.js
-                        // Note: Our ingest.js preserves original case (e.g., "Background"). 
-                        // So we look for it case-insensitively.
-                        for (let key in metadata.attributes) {
-                            if (key.toUpperCase() === type) return metadata.attributes[key];
+                        if (t) {
+                            val = t.value;
+                            keyFound = t.trait_type;
                         }
-                        return "UNKNOWN";
+                    } else {
+                        for (let key in metadata.attributes) {
+                            if (key.toUpperCase() === type) {
+                                val = metadata.attributes[key];
+                                keyFound = key;
+                                break;
+                            }
+                        }
                     }
+
+                    if (keyFound && metadata.rarity && metadata.rarity[keyFound]) {
+                        val += ` <span style="font-size: 0.8em; color: rgba(0, 255, 255, 0.6);">(${metadata.rarity[keyFound]})</span>`;
+                    }
+                    
+                    return val;
                 };
 
-                document.getElementById('trait-background').innerText = getTrait("BACKGROUND");
-                document.getElementById('trait-core').innerText = getTrait("CORE");
-                document.getElementById('trait-keeper').innerText = getTrait("KEEPER");
-                document.getElementById('trait-relic').innerText = getTrait("RELIC");
+                document.getElementById('trait-background').innerHTML = getTrait("BACKGROUND");
+                document.getElementById('trait-core').innerHTML = getTrait("CORE");
+                document.getElementById('trait-keeper').innerHTML = getTrait("KEEPER");
+                document.getElementById('trait-relic').innerHTML = getTrait("RELIC");
                 
                 // Extra metadata from the API
                 if (metadata.description) {
