@@ -135,6 +135,57 @@ app.get('/api/lands/:tokenId/attributes', (req, res) => {
     }
 });
 
+// 6. GET /api/image/:tokenId - Proxy IPFS images to avoid CORS and frontend rate limits
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args)).catch(() => globalThis.fetch(...args));
+
+app.get('/api/image/:tokenId', async (req, res) => {
+    const data = getLandsData();
+    const tokenId = req.params.tokenId;
+    
+    if (!data[tokenId] || !data[tokenId].image) {
+        return res.status(404).send("Image not found");
+    }
+    
+    // Convert ipfs://Qmf5gaeRhx2PBk4X2vH3sRCYfSmNKFHqHUKHWqqfyqwSJK/1.png 
+    const cidPath = data[tokenId].image.replace('ipfs://', '');
+    
+    // Try multiple gateways for the image proxy
+    const gateways = [
+        `https://ipfs.io/ipfs/${cidPath}`,
+        `https://gateway.pinata.cloud/ipfs/${cidPath}`,
+        `https://dweb.link/ipfs/${cidPath}`,
+        `https://cloudflare-ipfs.com/ipfs/${cidPath}`
+    ];
+    
+    for (const url of gateways) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            
+            if (response.ok) {
+                // Pipe the image directly to the client
+                res.setHeader('Content-Type', response.headers.get('content-type') || 'image/png');
+                res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+                
+                // For Node 18+ fetch API, response.body is a web stream
+                if (response.body.pipe) {
+                    return response.body.pipe(res); // node-fetch
+                } else {
+                    const arrayBuffer = await response.arrayBuffer();
+                    return res.send(Buffer.from(arrayBuffer));
+                }
+            }
+        } catch (e) {
+            // Try next gateway
+        }
+    }
+    
+    res.status(502).send("All IPFS gateways failed to load image");
+});
+
 app.listen(PORT, () => {
     console.log(`TobyWorld API and Static Server running on port ${PORT}`);
     console.log(`Access the application at http://localhost:${PORT}`);
