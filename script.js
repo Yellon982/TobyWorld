@@ -424,6 +424,35 @@ window.addEventListener('pointerup', (event) => {
     }
 });
 
+// Change cursor on hover
+window.addEventListener('pointermove', (event) => {
+    const modal = document.getElementById('wallet-modal');
+    if ((modal && modal.style.display === 'flex') || event.target.closest('#wallet-modal')) {
+        document.body.style.cursor = 'crosshair';
+        return;
+    }
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+
+    const interactiveObjects = [tobySprite];
+    lorelandsGroup.children.forEach(group => {
+        group.children.forEach(child => {
+            if (child.userData && child.userData.isIsland) {
+                interactiveObjects.push(child);
+            }
+        });
+    });
+
+    const intersects = raycaster.intersectObjects(interactiveObjects);
+    if (intersects.length > 0) {
+        document.body.style.cursor = 'cell';
+    } else {
+        document.body.style.cursor = 'crosshair';
+    }
+});
+
 // Remove openDeedRegistry and replace with redirect
 function openDeedRegistry(islandName, color, tokenId) {
     // Redirect to the dedicated land page instead of showing a popup
