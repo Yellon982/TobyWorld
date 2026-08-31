@@ -196,15 +196,15 @@ const lorelandsGroup = new THREE.Group();
 universeGroup.add(lorelandsGroup);
 
 const islandDataMap = [
-    { name: "Emberreach", color: "#ff4400", count: 150 },
-    { name: "Frostveil", color: "#66ccff", count: 125 },
-    { name: "Meadow", color: "#22ff55", count: 200 },
-    { name: "Mossmere", color: "#33ff99", count: 175 },
-    { name: "Sporegrove", color: "#9933ff", count: 90 },
-    { name: "Stillwater", color: "#00ccff", count: 210 },
-    { name: "Sunfield", color: "#ffcc00", count: 180 },
-    { name: "ThePond", color: "#0088ff", count: 140 },
-    { name: "Waystones", color: "#cc00ff", count: 230 }
+    { name: "Emberreach", color: "#ff4400", count: 150, tokenId: 11 },
+    { name: "Frostveil", color: "#66ccff", count: 125, tokenId: 6 },
+    { name: "Meadow", color: "#22ff55", count: 200, tokenId: 10 },
+    { name: "Mossmere", color: "#33ff99", count: 175, tokenId: 7 },
+    { name: "Sporegrove", color: "#9933ff", count: 90, tokenId: 25 },
+    { name: "Stillwater", color: "#00ccff", count: 210, tokenId: 42 },
+    { name: "Sunfield", color: "#ffcc00", count: 180, tokenId: 21 },
+    { name: "ThePond", color: "#0088ff", count: 140, tokenId: 1 },
+    { name: "Waystones", color: "#cc00ff", count: 230, tokenId: 2 }
 ];
 
 const numLorelands = islandDataMap.length;
@@ -234,7 +234,7 @@ for (let i = 0; i < numLorelands; i++) {
     });
     const islandSprite = new THREE.Sprite(islandMat);
     islandSprite.scale.set(33, 33, 1); // Increased size by another 50%
-    islandSprite.userData = { isIsland: true, name: islandName, color: colorHex }; // For raycasting
+    islandSprite.userData = { isIsland: true, name: islandName, color: colorHex, tokenId: island.tokenId }; // For raycasting
     islandGroup.add(islandSprite);
     
     // 3. Create the colored text label below it
@@ -377,17 +377,16 @@ window.addEventListener('pointerup', (event) => {
         if (clickedData.isCenterToby) {
             document.getElementById('wallet-modal').style.display = 'flex';
         } else if (clickedData.isIsland) {
-            openDeedRegistry(clickedData.name, clickedData.color);
+            openDeedRegistry(clickedData.name, clickedData.color, clickedData.tokenId);
         }
     }
 });
 
 // Remove openDeedRegistry and replace with redirect
-function openDeedRegistry(islandName, color) {
+function openDeedRegistry(islandName, color, tokenId) {
     // Redirect to the dedicated land page instead of showing a popup
-    // Encode the color to pass it safely in the URL (e.g. #ff0000 -> %23ff0000)
     const encodedColor = encodeURIComponent(color);
-    window.location.href = `land.html?island=${islandName}&color=${encodedColor}`;
+    window.location.href = `land.html?island=${islandName}&color=${encodedColor}&id=${tokenId}`;
 }
 
 // Window resize handling

@@ -175,13 +175,14 @@
         const islandId = urlParams.get('island') || 'Emberreach';
         const islandColor = urlParams.get('color') || '#00ffff';
 
-        // Setup UI
+        // Setup UI base (will be updated by API)
         const nameDisplay = islandId.toUpperCase() === "THEPOND" ? "THE POND" : islandId.toUpperCase();
         document.getElementById('land-name').innerText = nameDisplay;
         document.getElementById('land-name').style.color = islandColor;
         document.getElementById('land-name').style.textShadow = `0 0 20px ${islandColor}, 0 0 50px ${islandColor}`;
         
         const imgElement = document.getElementById('land-image');
+        // Fallback to local image if API fails
         imgElement.src = `public/${islandId}.png`;
         imgElement.alt = `Detailed 3D pixel illustration of the ${nameDisplay} loreland`;
         imgElement.style.filter = `drop-shadow(0 0 20px ${islandColor})`;
@@ -193,7 +194,7 @@
             "function tokenURI(uint256 tokenId) view returns (string)"
         ];
 
-        // Map each island to a specific canonical NFT Token ID for display
+        // Map each island to a specific canonical NFT Token ID for display (Fallback if URL id is missing)
         const ISLAND_TOKEN_IDS = {
             "ThePond": 1,
             "Waystones": 2,
@@ -208,46 +209,53 @@
 
         async function fetchIslandData() {
             const statusMsg = document.getElementById('status-msg');
-            statusMsg.innerText = "DECRYPTING DEED METADATA...";
+            statusMsg.innerText = "ACCESSING LOCAL CACHE...";
             
             try {
-                const tokenId = ISLAND_TOKEN_IDS[islandId];
+                // Read from URL, fallback to mapping
+                let tokenId = urlParams.get('id') || ISLAND_TOKEN_IDS[islandId];
                 if (!tokenId) throw new Error("Invalid Island ID: " + islandId);
                 
-                // The canonical CID for the collection's metadata
-                const IPFS_CID = "QmePpWhx8kmPJZBsQwP1bYQxJAdFUorE59ARtCUxew2ZRV";
+                // Fetch from our ultra-fast local API server instead of IPFS
+                const response = await fetch(`/api/lands/${tokenId}`);
+                if (!response.ok) throw new Error("API failed");
                 
-                let fetchUrl = `https://ipfs.io/ipfs/${IPFS_CID}/${tokenId}`;
-
-                let response;
-                try {
-                    response = await fetch(fetchUrl);
-                    if (!response.ok) throw new Error("Primary IPFS failed");
-                } catch(e1) {
-                    try {
-                        // Fallback 1: dweb.link
-                        fetchUrl = `https://dweb.link/ipfs/${IPFS_CID}/${tokenId}`;
-                        response = await fetch(fetchUrl);
-                        if (!response.ok) throw new Error("Fallback IPFS failed");
-                    } catch(e2) {
-                        // Fallback 2: CORS Proxy + ipfs.io (Bypasses aggressive mobile browser blocks)
-                        fetchUrl = `https://corsproxy.io/?https://ipfs.io/ipfs/${IPFS_CID}/${tokenId}`;
-                        response = await fetch(fetchUrl);
-                    }
-                }
-
                 const metadata = await response.json();
 
                 const getTrait = (type) => {
-                    if (!metadata || !Array.isArray(metadata.attributes)) return "OFFLINE";
-                    const t = metadata.attributes.find(a => a.trait_type.toUpperCase() === type);
-                    return t ? t.value : "UNKNOWN";
+                    // Our API pre-formats attributes into an object, but we handle both just in case
+                    if (!metadata || !metadata.attributes) return "OFFLINE";
+                    
+                    if (Array.isArray(metadata.attributes)) {
+                        const t = metadata.attributes.find(a => a.trait_type.toUpperCase() === type);
+                        return t ? t.value : "UNKNOWN";
+                    } else {
+                        // Using the object mapping from ingest.js
+                        // Note: Our ingest.js preserves original case (e.g., "Background"). 
+                        // So we look for it case-insensitively.
+                        for (let key in metadata.attributes) {
+                            if (key.toUpperCase() === type) return metadata.attributes[key];
+                        }
+                        return "UNKNOWN";
+                    }
                 };
 
                 document.getElementById('trait-background').innerText = getTrait("BACKGROUND");
                 document.getElementById('trait-core').innerText = getTrait("CORE");
                 document.getElementById('trait-keeper').innerText = getTrait("KEEPER");
                 document.getElementById('trait-relic').innerText = getTrait("RELIC");
+                
+                // Extra metadata from the API
+                if (metadata.description) {
+                    const loreBox = document.querySelector('.lore-box p');
+                    if (loreBox) loreBox.innerText = metadata.description;
+                }
+                if (metadata.name) {
+                    document.getElementById('land-name').innerText = metadata.name.toUpperCase();
+                }
+                if (metadata.gateway_image_url) {
+                    imgElement.src = metadata.gateway_image_url;
+                }
                 
                 statusMsg.innerText = "DATA SYNC COMPLETE.";
                 setTimeout(() => statusMsg.innerText = "", 2000);

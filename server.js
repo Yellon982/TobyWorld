@@ -1,0 +1,141 @@
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const DATA_FILE = path.join(__dirname, 'data', 'lands.json');
+
+app.use(cors());
+app.use(express.json());
+// Serve static files for the frontend (the TobyWorld 3D visualization)
+app.use(express.static(__dirname));
+
+// Utility to read data
+function getLandsData() {
+    if (fs.existsSync(DATA_FILE)) {
+        try {
+            return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        } catch (e) {
+            return {};
+        }
+    }
+    return {};
+}
+
+// 1. GET /api/lands (All lands)
+app.get('/api/lands', (req, res) => {
+    const data = getLandsData();
+    res.json(Object.values(data));
+});
+
+// 2. GET /api/lands/search?q=
+app.get('/api/lands/search', (req, res) => {
+    const data = getLandsData();
+    const query = req.query.q;
+    
+    if (!query) {
+        return res.json(Object.values(data));
+    }
+    
+    // Parse queries like "Core:Reactor" or just plain text search
+    let searchKey = null;
+    let searchValue = query.toLowerCase();
+    
+    if (query.includes(':')) {
+        const parts = query.split(':');
+        searchKey = parts[0].trim().toLowerCase();
+        searchValue = parts[1].trim().toLowerCase();
+    }
+    
+    const results = Object.values(data).filter(land => {
+        if (searchKey) {
+            // Check specific attribute
+            const attrs = land.attributes || {};
+            for (const [k, v] of Object.entries(attrs)) {
+                if (k.toLowerCase() === searchKey && String(v).toLowerCase().includes(searchValue)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            // Global text search across name, description, and attributes
+            if (land.name && land.name.toLowerCase().includes(searchValue)) return true;
+            if (land.description && land.description.toLowerCase().includes(searchValue)) return true;
+            
+            const attrs = land.attributes || {};
+            for (const v of Object.values(attrs)) {
+                if (String(v).toLowerCase().includes(searchValue)) return true;
+            }
+            return false;
+        }
+    });
+    
+    res.json(results);
+});
+
+// 3. GET /api/lands/stats
+app.get('/api/lands/stats', (req, res) => {
+    const data = getLandsData();
+    const landsArray = Object.values(data);
+    
+    const stats = {
+        totalLands: landsArray.length,
+        backgrounds: {},
+        lands: {},
+        cores: {},
+        relics: {},
+        keepers: {}
+    };
+    
+    landsArray.forEach(land => {
+        const attrs = land.attributes || {};
+        
+        const bg = attrs['Background'] || 'None';
+        stats.backgrounds[bg] = (stats.backgrounds[bg] || 0) + 1;
+        
+        const lnd = attrs['Land'] || 'None';
+        stats.lands[lnd] = (stats.lands[lnd] || 0) + 1;
+        
+        const core = attrs['Core'] || 'None';
+        stats.cores[core] = (stats.cores[core] || 0) + 1;
+        
+        const relic = attrs['Relic'] || 'None';
+        stats.relics[relic] = (stats.relics[relic] || 0) + 1;
+        
+        const keeper = attrs['Keeper'] || 'None';
+        stats.keepers[keeper] = (stats.keepers[keeper] || 0) + 1;
+    });
+    
+    res.json(stats);
+});
+
+// 4. GET /api/lands/:tokenId
+app.get('/api/lands/:tokenId', (req, res) => {
+    const data = getLandsData();
+    const tokenId = req.params.tokenId;
+    
+    if (data[tokenId]) {
+        res.json(data[tokenId]);
+    } else {
+        res.status(404).json({ error: "Land not found or not yet ingested" });
+    }
+});
+
+// 5. GET /api/lands/:tokenId/attributes
+app.get('/api/lands/:tokenId/attributes', (req, res) => {
+    const data = getLandsData();
+    const tokenId = req.params.tokenId;
+    
+    if (data[tokenId]) {
+        res.json(data[tokenId].attributes || {});
+    } else {
+        res.status(404).json({ error: "Land not found or not yet ingested" });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`TobyWorld API and Static Server running on port ${PORT}`);
+    console.log(`Access the application at http://localhost:${PORT}`);
+});
