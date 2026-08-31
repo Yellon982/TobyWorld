@@ -148,7 +148,7 @@ app.get('/api/image/:tokenId', async (req, res) => {
     // Convert ipfs://Qmf5gaeRhx2PBk4X2vH3sRCYfSmNKFHqHUKHWqqfyqwSJK/1.png 
     const cidPath = data[tokenId].image.replace('ipfs://', '');
     
-    // Try multiple gateways for the image proxy
+    // Try multiple gateways for the image proxy simultaneously (Promise.any)
     const gateways = [
         `https://ipfs.io/ipfs/${cidPath}`,
         `https://gateway.pinata.cloud/ipfs/${cidPath}`,
@@ -156,33 +156,41 @@ app.get('/api/image/:tokenId', async (req, res) => {
         `https://cloudflare-ipfs.com/ipfs/${cidPath}`
     ];
     
-    for (const url of gateways) {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            
-            const response = await fetch(url, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            
-            if (response.ok) {
-                // Pipe the image directly to the client
-                res.setHeader('Content-Type', response.headers.get('content-type') || 'image/png');
-                res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+    const fetchPromises = gateways.map(url => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
                 
-                // For Node 18+ fetch API, response.body is a web stream
-                if (response.body.pipe) {
-                    return response.body.pipe(res); // node-fetch
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    resolve(response);
                 } else {
-                    const arrayBuffer = await response.arrayBuffer();
-                    return res.send(Buffer.from(arrayBuffer));
+                    reject(new Error(`Status ${response.status}`));
                 }
+            } catch (e) {
+                reject(e);
             }
-        } catch (e) {
-            // Try next gateway
+        });
+    });
+
+    try {
+        const fastestResponse = await Promise.any(fetchPromises);
+        
+        res.setHeader('Content-Type', fastestResponse.headers.get('content-type') || 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+        
+        if (fastestResponse.body.pipe) {
+            return fastestResponse.body.pipe(res);
+        } else {
+            const arrayBuffer = await fastestResponse.arrayBuffer();
+            return res.send(Buffer.from(arrayBuffer));
         }
+    } catch (e) {
+        return res.status(502).send("All IPFS gateways failed to load image");
     }
-    
-    res.status(502).send("All IPFS gateways failed to load image");
 });
 
 if (require.main === module) {

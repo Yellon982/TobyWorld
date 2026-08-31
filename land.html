@@ -257,6 +257,10 @@
                 // Use the backend proxy to fetch the image instantly without CORS/Rate limits
                 if (tokenId) {
                     imgElement.src = `/api/image/${tokenId}`;
+                    imgElement.onerror = () => {
+                        console.warn('IPFS Gateway timeout. Falling back to generic visual.');
+                        imgElement.src = `public/${islandId}.png`;
+                    };
                 }
                 
                 statusMsg.innerText = "DATA SYNC COMPLETE.";
