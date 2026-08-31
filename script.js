@@ -4,7 +4,8 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x000511, 0.002);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 150;
+function updateCameraForMobile() { if (window.innerWidth < 768) { camera.position.z = 150 + ((768 - window.innerWidth) * 0.35); } else { camera.position.z = 150; } }
+updateCameraForMobile();
 camera.position.y = 30;
 camera.lookAt(0, 0, 0);
 
@@ -433,6 +434,7 @@ function openDeedRegistry(islandName, color, tokenId) {
 // Window resize handling
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
+    updateCameraForMobile();
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });

@@ -362,3 +362,95 @@ body::after {
     background-size: 100% 2px, 3px 100%;
     pointer-events: none;
 }
+
+/* --- RESPONSIVE SEARCH UI --- */
+.search-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 999;
+    display: flex;
+    gap: 10px;
+    pointer-events: auto;
+    width: auto;
+}
+
+#deed-search-input {
+    background: rgba(0,20,30,0.8);
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    font-family: 'Share Tech Mono', monospace;
+    padding: 10px 15px;
+    outline: none;
+    width: 220px;
+    font-size: 16px;
+}
+
+#deed-search-btn {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    color: #00ffff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.search-instruction {
+    position: absolute;
+    top: 75px;
+    left: 20px;
+    z-index: 999;
+    pointer-events: none;
+    color: #00ffff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    opacity: 0.8;
+    background: rgba(0,20,30,0.6);
+    padding: 6px 12px;
+    border-left: 2px solid #00ffff;
+}
+
+/* Mobile Tweaks */
+@media (max-width: 768px) {
+    .search-container {
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90vw;
+        max-width: 350px;
+        flex-direction: column;
+    }
+    #deed-search-input {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    #deed-search-btn {
+        width: 100%;
+    }
+    .search-instruction {
+        top: 130px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90vw;
+        max-width: 350px;
+        text-align: center;
+        box-sizing: border-box;
+        border-left: none;
+        border-top: 2px solid #00ffff;
+    }
+    
+    /* Ensure the land details modal also fits perfectly */
+    .land-container {
+        padding: 1.5rem !important;
+        margin-top: 60px; /* Leave space for back button */
+    }
+    
+    /* Ensure back button doesn't overlap on mobile */
+    #back-btn {
+        top: 10px !important;
+        left: 10px !important;
+        font-size: 12px !important;
+        padding: 8px 10px !important;
+    }
+}
+
