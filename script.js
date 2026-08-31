@@ -260,14 +260,8 @@ function buildIslands() {
         auraSprite.position.z = -0.1; // Push it just slightly back to prevent z-fighting without perspective uncentering
         islandGroup.add(auraSprite);
 
-        // 2. Load the island PNG as a sprite (using our robust local proxy to avoid CORS/IPFS rate limits)
-        const textureUrl = `/api/image/${island.tokenId}`;
-        const texture = textureLoader.load(textureUrl, undefined, undefined, (err) => {
-            console.warn(`Failed to load texture for token ${island.tokenId}, falling back to generic`, err);
-            // Fallback to generic if API proxy fails
-            islandMat.map = textureLoader.load(`public/${islandName}.png`);
-            islandMat.needsUpdate = true;
-        });
+        // 2. Load the original generic island PNG as a sprite
+        const texture = textureLoader.load(`public/${islandName}.png`);
         
         const islandMat = new THREE.SpriteMaterial({ 
             map: texture, 

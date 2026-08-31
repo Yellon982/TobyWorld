@@ -253,8 +253,10 @@
                 if (metadata.name) {
                     document.getElementById('land-name').innerText = metadata.name.toUpperCase();
                 }
-                if (metadata.gateway_image_url) {
-                    imgElement.src = metadata.gateway_image_url;
+                
+                // Use the backend proxy to fetch the image instantly without CORS/Rate limits
+                if (tokenId) {
+                    imgElement.src = `/api/image/${tokenId}`;
                 }
                 
                 statusMsg.innerText = "DATA SYNC COMPLETE.";
