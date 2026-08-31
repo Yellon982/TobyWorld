@@ -211,57 +211,97 @@ const numLorelands = islandDataMap.length;
 const orbitRadius = 65;
 const lorelands = [];
 
-for (let i = 0; i < numLorelands; i++) {
-    const island = islandDataMap[i];
-    const islandName = island.name;
-    const colorHex = island.color;
+async function initLorelands() {
+    try {
+        const response = await fetch('/api/lands');
+        if (response.ok) {
+            const allLands = await response.json();
+            
+            // Group by land category
+            const categorized = {};
+            allLands.forEach(land => {
+                const landType = land.attributes && land.attributes.Land;
+                if (landType) {
+                    // Normalize name to match islandDataMap (e.g. "The Pond" -> "ThePond")
+                    const normalized = landType.replace(/\s+/g, '');
+                    if (!categorized[normalized]) categorized[normalized] = [];
+                    categorized[normalized].push(land);
+                }
+            });
+            
+            // Pick random for each
+            islandDataMap.forEach(island => {
+                const bucket = categorized[island.name];
+                if (bucket && bucket.length > 0) {
+                    const randomLand = bucket[Math.floor(Math.random() * bucket.length)];
+                    island.tokenId = randomLand.tokenId;
+                }
+            });
+        }
+    } catch (e) {
+        console.warn("Could not fetch lands from API. Falling back to defaults.", e);
+    }
     
-    // Create a group for the island + its label so they move together
-    const islandGroup = new THREE.Group();
-    
-    // 1. Create and add the Aura behind the island
-    const auraSprite = createAura(colorHex);
-    auraSprite.position.z = -0.1; // Push it just slightly back to prevent z-fighting without perspective uncentering
-    islandGroup.add(auraSprite);
-
-    // 2. Load the island PNG as a sprite
-    const texture = textureLoader.load(`public/${islandName}.png`);
-    const islandMat = new THREE.SpriteMaterial({ 
-        map: texture, 
-        transparent: false, // Opaque cutout prevents transparency sorting issues
-        alphaTest: 0.5, // Discards transparent pixels, making the visible part completely solid
-        depthWrite: true // Ensures it blocks objects behind it
-    });
-    const islandSprite = new THREE.Sprite(islandMat);
-    islandSprite.scale.set(33, 33, 1); // Increased size by another 50%
-    islandSprite.userData = { isIsland: true, name: islandName, color: colorHex, tokenId: island.tokenId }; // For raycasting
-    islandGroup.add(islandSprite);
-    
-    // 3. Create the colored text label below it
-    const labelSprite = createTextLabel(islandName, colorHex);
-    labelSprite.position.y = -16; // Moved down further for the much larger island
-    islandGroup.add(labelSprite);
-    
-    // Perfectly even spacing
-    const angle = (i / numLorelands) * Math.PI * 2;
-    
-    // Staggered vertical starting positions (forming a slight wave)
-    const yOffset = Math.sin(angle * 2) * 15;
-    
-    const lorelandData = {
-        group: islandGroup,
-        baseAngle: angle,
-        distance: orbitRadius,
-        yOffset: yOffset,
-        floatSpeed: 0.015 + Math.random() * 0.01,
-        timeOffset: Math.random() * Math.PI * 2,
-        wobbleSpeed: 0.01 + Math.random() * 0.005,
-        driftSize: 4 + Math.random() * 4
-    };
-    
-    lorelandsGroup.add(islandGroup);
-    lorelands.push(lorelandData);
+    // NOW build the Three.js objects
+    buildIslands();
 }
+
+function buildIslands() {
+    for (let i = 0; i < numLorelands; i++) {
+        const island = islandDataMap[i];
+        const islandName = island.name;
+        const colorHex = island.color;
+        
+        // Create a group for the island + its label so they move together
+        const islandGroup = new THREE.Group();
+        
+        // 1. Create and add the Aura behind the island
+        const auraSprite = createAura(colorHex);
+        auraSprite.position.z = -0.1; // Push it just slightly back to prevent z-fighting without perspective uncentering
+        islandGroup.add(auraSprite);
+
+        // 2. Load the island PNG as a sprite
+        const texture = textureLoader.load(`public/${islandName}.png`);
+        const islandMat = new THREE.SpriteMaterial({ 
+            map: texture, 
+            transparent: false, // Opaque cutout prevents transparency sorting issues
+            alphaTest: 0.5, // Discards transparent pixels, making the visible part completely solid
+            depthWrite: true // Ensures it blocks objects behind it
+        });
+        const islandSprite = new THREE.Sprite(islandMat);
+        islandSprite.scale.set(33, 33, 1); // Increased size by another 50%
+        islandSprite.userData = { isIsland: true, name: islandName, color: colorHex, tokenId: island.tokenId }; // For raycasting
+        islandGroup.add(islandSprite);
+        
+        // 3. Create the colored text label below it
+        const labelSprite = createTextLabel(islandName, colorHex);
+        labelSprite.position.y = -16; // Moved down further for the much larger island
+        islandGroup.add(labelSprite);
+        
+        // Perfectly even spacing
+        const angle = (i / numLorelands) * Math.PI * 2;
+        
+        // Staggered vertical starting positions (forming a slight wave)
+        const yOffset = Math.sin(angle * 2) * 15;
+        
+        const lorelandData = {
+            group: islandGroup,
+            baseAngle: angle,
+            distance: orbitRadius,
+            yOffset: yOffset,
+            floatSpeed: 0.015 + Math.random() * 0.01,
+            timeOffset: Math.random() * Math.PI * 2,
+            wobbleSpeed: 0.01 + Math.random() * 0.005,
+            driftSize: 4 + Math.random() * 4
+        };
+        
+        lorelandsGroup.add(islandGroup);
+        lorelands.push(lorelandData);
+    }
+}
+
+// Start async fetch
+initLorelands();
 
 // Make the 3D Canvas accessible
 renderer.domElement.setAttribute('role', 'img');
