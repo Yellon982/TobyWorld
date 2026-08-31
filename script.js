@@ -455,9 +455,20 @@ window.addEventListener('pointermove', (event) => {
 
 // Remove openDeedRegistry and replace with redirect
 function openDeedRegistry(islandName, color, tokenId) {
-    // Redirect to the dedicated land page instead of showing a popup
     const encodedColor = encodeURIComponent(color);
-    window.location.href = `land.html?island=${islandName}&color=${encodedColor}&id=${tokenId}`;
+    document.body.style.cursor = 'wait';
+    fetch(`/api/random/${islandName}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.tokenId) {
+                window.location.href = `land.html?island=${islandName}&color=${encodedColor}&id=${data.tokenId}`;
+            } else {
+                window.location.href = `land.html?island=${islandName}&color=${encodedColor}&id=${tokenId}`;
+            }
+        })
+        .catch(() => {
+            window.location.href = `land.html?island=${islandName}&color=${encodedColor}&id=${tokenId}`;
+        });
 }
 
 // Window resize handling
