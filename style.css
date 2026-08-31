@@ -454,3 +454,13 @@ body::after {
     }
 }
 
+
+/* Custom Cyber Cursor */
+body, html {
+    cursor: crosshair;
+}
+
+button, .cyber-button, a, input, select {
+    cursor: cell; /* Changes to a plus-sign cell cursor when hovering over clickable items */
+}
+
