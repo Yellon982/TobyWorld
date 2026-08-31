@@ -593,3 +593,48 @@ if (window.ethereum) {
 
 // End of script
 
+
+// --- DEED SEARCH LOGIC ---
+const searchBtn = document.getElementById('deed-search-btn');
+const searchInput = document.getElementById('deed-search-input');
+
+if (searchBtn && searchInput) {
+    const handleSearch = async () => {
+        const tokenId = parseInt(searchInput.value);
+        if (isNaN(tokenId) || tokenId < 1 || tokenId > 2869) {
+            alert('Please enter a valid Lore Land Deed # (1 - 2869)');
+            return;
+        }
+        
+        try {
+            searchBtn.innerText = 'LOCATING...';
+            const response = await fetch('/api/lands/' + tokenId);
+            if (!response.ok) throw new Error('Not found');
+            const data = await response.json();
+            
+            let islandName = 'Emberreach';
+            let colorHex = '#00ffff';
+            
+            if (data.attributes && data.attributes.Land) {
+                const landType = data.attributes.Land.replace(/\s+/g, '');
+                const mappedIsland = islandDataMap.find(i => i.name === landType);
+                if (mappedIsland) {
+                    islandName = mappedIsland.name;
+                    colorHex = mappedIsland.color;
+                }
+            }
+            
+            const encodedColor = encodeURIComponent(colorHex);
+            window.location.href = 'land.html?island=' + islandName + '&color=' + encodedColor + '&id=' + tokenId;
+        } catch (e) {
+            alert('Could not locate that deed. It may not be ingested yet.');
+            searchBtn.innerText = 'SEARCH';
+        }
+    };
+    
+    searchBtn.addEventListener('click', handleSearch);
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleSearch();
+    });
+}
+

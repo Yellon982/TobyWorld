@@ -10,6 +10,10 @@
 <body>
     <div id="ui-container">
         <!-- Minimalist cinematic mode: HUD panels removed -->
+        <div class="search-container" style="position: absolute; top: 20px; left: 20px; z-index: 100; display: flex; gap: 10px; pointer-events: auto;">
+            <input type="number" id="deed-search-input" placeholder="DEED # (1-2869)" style="background: rgba(0,0,0,0.7); border: 1px solid #00ffff; color: #00ffff; font-family: 'Share Tech Mono', monospace; padding: 8px 12px; outline: none; width: 180px;" min="1" max="2869">
+            <button id="deed-search-btn" class="cyber-button" style="padding: 8px 15px; cursor: pointer; font-family: 'Share Tech Mono', monospace; color: #00ffff;">SEARCH</button>
+        </div>
     </div>
 
     <!-- TERMINAL MODAL -->
