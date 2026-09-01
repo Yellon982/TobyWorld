@@ -400,11 +400,12 @@ window.addEventListener('pointerup', (event) => {
 
     const intersects = raycaster.intersectObjects(interactiveObjects);
     if (intersects.length > 0) {
-        const clickedData = intersects[0].object.userData;
+        const clickedSprite = intersects[0].object;
+        const clickedData = clickedSprite.userData;
         if (clickedData.isCenterToby) {
             document.getElementById('wallet-modal').style.display = 'flex';
         } else if (clickedData.isIsland) {
-            openDeedRegistry(clickedData.name, clickedData.color, clickedData.tokenId);
+            openDeedRegistry(clickedData.name, clickedData.color, clickedData.tokenId, clickedSprite);
         }
     }
 });
@@ -438,21 +439,83 @@ window.addEventListener('pointermove', (event) => {
     }
 });
 
-// Remove openDeedRegistry and replace with redirect
-function openDeedRegistry(islandName, color, tokenId) {
+function animateIslandExpansion(sprite, onComplete) {
+    const startScale = sprite.scale.clone();
+    const endScale = new THREE.Vector3(startScale.x * 6, startScale.y * 6, 1);
+    
+    const startPos = sprite.position.clone();
+    const endPos = new THREE.Vector3(0, 0, camera.position.z - 100);
+
+    const duration = 600; // ms
+    const startTime = performance.now();
+
+    function update(time) {
+        let progress = (time - startTime) / duration;
+        if (progress > 1) progress = 1;
+        
+        // easeOutQuart
+        const ease = 1 - Math.pow(1 - progress, 4);
+        
+        sprite.scale.lerpVectors(startScale, endScale, ease);
+        sprite.position.lerpVectors(startPos, endPos, ease);
+        
+        // Fade out other elements
+        lorelandsGroup.children.forEach(group => {
+            group.children.forEach(child => {
+                if (child !== sprite && child.material) {
+                    child.material.transparent = true;
+                    child.material.opacity = 1 - ease;
+                }
+            });
+        });
+        
+        if (tobySprite && tobySprite.material) {
+            tobySprite.material.transparent = true;
+            tobySprite.material.opacity = 1 - ease;
+        }
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else if (onComplete) {
+            onComplete();
+        }
+    }
+    requestAnimationFrame(update);
+}
+
+// Cinematic redirect with animation and concurrent API fetch
+function openDeedRegistry(islandName, color, tokenId, clickedSprite) {
     const encodedColor = encodeURIComponent(color);
     document.body.style.cursor = 'wait';
+    
+    let animDone = false;
+    let fetchResult = null;
+
+    function proceed() {
+        if (animDone && fetchResult) {
+            document.body.style.cursor = 'default';
+            window.location.href = fetchResult;
+        }
+    }
+
+    animateIslandExpansion(clickedSprite, () => {
+        animDone = true;
+        proceed();
+    });
+
     fetch(`/api/random/${islandName}`)
         .then(res => res.json())
         .then(data => {
-            if (data.tokenId) {
-                window.location.href = `land.html?island=${islandName}&color=${encodedColor}&id=${data.tokenId}`;
+            if (data && data.tokenId) {
+                fetchResult = `land.html?island=${islandName}&color=${encodedColor}&id=${data.tokenId}`;
             } else {
-                window.location.href = `land.html?island=${islandName}&color=${encodedColor}&id=${tokenId}`;
+                fetchResult = `land.html?island=${islandName}&color=${encodedColor}&id=${tokenId}`;
             }
+            proceed();
         })
         .catch(() => {
-            window.location.href = `land.html?island=${islandName}&color=${encodedColor}&id=${tokenId}`;
+            fetchResult = `land.html?island=${islandName}&color=${encodedColor}&id=${tokenId}`;
+            proceed();
         });
 }
 
