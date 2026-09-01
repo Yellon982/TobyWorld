@@ -10,6 +10,7 @@ camera.position.y = 30;
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x000208, 1);
 document.body.appendChild(renderer.domElement);
@@ -316,7 +317,7 @@ scene.add(dust);
 function animate() {
     requestAnimationFrame(animate);
     
-    time += 1;
+    time = performance.now() * 0.06;
     
     // Gentle hover for Toby and Center UI
     const tobyY = 23 + Math.sin(time * 0.03) * 1.5;
@@ -331,7 +332,7 @@ function animate() {
 
 
     // Orbit lorelands globally (keeps them evenly spaced)
-    lorelandsGroup.rotation.y += 0.003;
+    lorelandsGroup.rotation.y = time * 0.003;
 
     // Dynamic local floating for each loreland
     lorelands.forEach(l => {
@@ -365,7 +366,7 @@ function animate() {
     });
 
     // Slow global rotation for the whole universe
-    universeGroup.rotation.y += 0.001;
+    universeGroup.rotation.y = time * 0.05;
 
     renderer.render(scene, camera);
 }
@@ -373,6 +374,18 @@ function animate() {
 // --- RAYCASTER (CLICK MECHANICS) ---
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
+let globalInteractiveObjects = [];
+
+setTimeout(() => {
+    globalInteractiveObjects = [tobySprite];
+    lorelandsGroup.children.forEach(g => {
+        g.children.forEach(c => {
+            if (c.userData && c.userData.isIsland) {
+                globalInteractiveObjects.push(c);
+            }
+        });
+    });
+}, 1000);
 
 window.addEventListener('pointerup', (event) => {
     // Prevent 3D clicks if the wallet modal is open or if clicking on the UI
@@ -389,16 +402,8 @@ window.addEventListener('pointerup', (event) => {
     raycaster.setFromCamera(mouse, camera);
 
     // Get all interactive objects
-    const interactiveObjects = [tobySprite];
-    lorelandsGroup.children.forEach(group => {
-        group.children.forEach(child => {
-            if (child.userData && child.userData.isIsland) {
-                interactiveObjects.push(child);
-            }
-        });
-    });
-
-    const intersects = raycaster.intersectObjects(interactiveObjects);
+    if (globalInteractiveObjects.length === 0) return;
+    const intersects = raycaster.intersectObjects(globalInteractiveObjects);
     if (intersects.length > 0) {
         const clickedSprite = intersects[0].object;
         const clickedData = clickedSprite.userData;
@@ -422,16 +427,8 @@ window.addEventListener('pointermove', (event) => {
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
 
-    const interactiveObjects = [tobySprite];
-    lorelandsGroup.children.forEach(group => {
-        group.children.forEach(child => {
-            if (child.userData && child.userData.isIsland) {
-                interactiveObjects.push(child);
-            }
-        });
-    });
-
-    const intersects = raycaster.intersectObjects(interactiveObjects);
+    if (globalInteractiveObjects.length === 0) return;
+    const intersects = raycaster.intersectObjects(globalInteractiveObjects);
     if (intersects.length > 0) {
         document.body.style.cursor = "url('public/cursor-hover.png') 16 16, pointer";
     } else {
