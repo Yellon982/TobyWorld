@@ -72,6 +72,27 @@ app.get('/api/lands', (req, res) => {
     res.json(Object.values(data));
 });
 
+// 2. GET /api/random/:landType
+app.get('/api/random/:landType', (req, res) => {
+    const data = getLandsData();
+    const targetLandType = req.params.landType.replace(/\s+/g, '').toLowerCase();
+    
+    // Filter lands that match the requested land type (ignoring spaces and case)
+    const matchingLands = Object.values(data).filter(land => {
+        if (!land.attributes || !land.attributes.Land) return false;
+        return land.attributes.Land.replace(/\s+/g, '').toLowerCase() === targetLandType;
+    });
+    
+    if (matchingLands.length > 0) {
+        // Pick a random land from the matches
+        const randomLand = matchingLands[Math.floor(Math.random() * matchingLands.length)];
+        res.json({ tokenId: randomLand.tokenId });
+    } else {
+        // Fallback if none found
+        res.status(404).json({ error: "No lands found for this type" });
+    }
+});
+
 // 2. GET /api/lands/search?q=
 app.get('/api/lands/search', (req, res) => {
     const data = getLandsData();
@@ -237,7 +258,21 @@ app.get('/api/image/:tokenId', async (req, res) => {
 });
 
 if (require.main === module) {
-    app.listen(PORT, () => {
+    // GET /api/pond-amm (Proxy to bypass X-Frame-Options)
+app.get('/api/pond-amm', async (req, res) => {
+    try {
+        const response = await fetch('https://tobyworld.app/world/');
+        let html = await response.text();
+        // Inject base tag so assets load correctly
+        html = html.replace(/<head>/i, '<head><base href="https://tobyworld.app/world/">');
+        res.send(html);
+    } catch (error) {
+        console.error("Proxy error:", error);
+        res.status(500).send("Error loading AMM");
+    }
+});
+
+app.listen(PORT, () => {
         console.log(`TobyWorld API running on port ${PORT}`);
     });
 }
