@@ -409,17 +409,27 @@ body::after {
     box-shadow: none;
 }
 
-#pond-amm-btn {
-    padding: 8px 15px;
-    font-size: 14px;
-    background: rgba(0,255,255,0.1);
-    border: 1px solid rgba(0,255,255,0.4);
-    border-radius: 4px;
-    margin: 0;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.pond-link {
+    position: absolute;
+    top: 90px;
+    right: 20px;
+    z-index: 999;
+    pointer-events: auto;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.pond-link:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 10px #00ffff);
+}
+
+.pond-link img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid #00ffff;
+    background: rgba(0,20,30,0.8);
+    object-fit: cover;
 }
 
 .search-instruction {
@@ -461,10 +471,13 @@ body::after {
         text-align: center;
     }
     
-    #pond-amm-btn {
-        width: 280px;
-        text-align: center;
-        box-sizing: border-box;
+    .pond-link {
+        top: 75px;
+        right: 10px;
+    }
+    .pond-link img {
+        width: 45px;
+        height: 45px;
     }
 
     .search-instruction {
