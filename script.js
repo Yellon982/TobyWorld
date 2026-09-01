@@ -36,32 +36,32 @@ universeGroup.add(coreGroup);
 // Function to generate the high-res center UI text as a texture
 function createCenterUISprite() {
     const canvas = document.createElement('canvas');
-    canvas.width = 2048;
-    canvas.height = 2048;
+    canvas.width = 1024;
+    canvas.height = 1024;
     const ctx = canvas.getContext('2d');
     
     // Glow behind Toby (approximate position)
-    const gradient = ctx.createRadialGradient(1024, 400, 0, 1024, 400, 600);
+    const gradient = ctx.createRadialGradient(512, 200, 0, 512, 200, 300);
     gradient.addColorStop(0, 'rgba(0, 255, 255, 0.8)'); // Intense bright cyan/blue
     gradient.addColorStop(0.5, 'rgba(0, 100, 255, 0.4)');
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 2048, 2048);
+    ctx.fillRect(0, 0, 1024, 1024);
 
-    // Title (300% Larger)
+    // Title
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = "Bold 390px 'Courier New', monospace";
+    ctx.font = "Bold 130px 'Courier New', monospace";
     ctx.fillStyle = "#ffffff";
     ctx.shadowColor = "rgba(0, 255, 255, 0.8)";
-    ctx.shadowBlur = 90;
-    ctx.fillText("TOBY", 1024, 800);
-    ctx.fillText("WORLD", 1024, 1150);
+    ctx.shadowBlur = 30;
+    ctx.fillText("TOBY", 512, 450);
+    ctx.fillText("WORLD", 512, 580);
     
     // Reset shadow
     ctx.shadowBlur = 0;
 
-    // Dots (9 island colors, 300% Larger)
+    // Dots (9 island colors)
     const dotColors = [
         "#ff4400", // Emberreach
         "#66ccff", // Frostveil
@@ -73,29 +73,29 @@ function createCenterUISprite() {
         "#0088ff", // ThePond
         "#cc00ff"  // Waystones
     ];
-    const dotSpacing = 105;
-    const startX = 1024 - (dotSpacing * 4); // Centers 9 dots
+    const dotSpacing = 35;
+    const startX = 512 - (dotSpacing * 4); // Centers 9 dots
     for(let i=0; i<9; i++) {
         ctx.beginPath();
-        ctx.arc(startX + i * dotSpacing, 1400, 30, 0, Math.PI * 2);
+        ctx.arc(startX + i * dotSpacing, 700, 10, 0, Math.PI * 2);
         ctx.fillStyle = dotColors[i];
         ctx.shadowColor = dotColors[i];
-        ctx.shadowBlur = 45;
+        ctx.shadowBlur = 15;
         ctx.fill();
     }
     
-    // Stats (Kept same physical size visually)
-    ctx.shadowBlur = 20;
+    // Stats
+    ctx.shadowBlur = 10;
     ctx.shadowColor = "rgba(122, 180, 255, 0.5)";
-    ctx.font = "Bold 48px 'Courier New', monospace";
+    ctx.font = "Bold 24px 'Courier New', monospace";
     ctx.fillStyle = "#7ab4ff";
-    ctx.fillText("BACKGROUND 4 • CORE 6 • KEEPER 3 • LAND 9 • RELIC 6", 1024, 1700);
+    ctx.fillText("BACKGROUND 4 · CORE 6 · KEEPER 3 · LAND 9 · RELIC 6", 512, 800);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.minFilter = THREE.LinearFilter;
     const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
     const sprite = new THREE.Sprite(mat);
-    sprite.scale.set(116, 116, 1);
+    sprite.scale.set(58, 58, 1);
     sprite.position.z = 25;
     return sprite;
 }
