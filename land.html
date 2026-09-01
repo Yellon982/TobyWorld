@@ -278,14 +278,27 @@
                     document.getElementById('land-name').innerText = metadata.name.toUpperCase();
                 }
                 
-                // Use the backend proxy to fetch the image instantly without CORS/Rate limits
-                if (tokenId) {
+                // Use the directly cached gateway URL from our ingestion script!
+                // This completely avoids the Vercel 10s Serverless timeout that was breaking the images.
+                if (metadata && metadata.gateway_image_url) {
                     const preloadImg = new Image();
                     preloadImg.onload = () => {
                         imgElement.src = preloadImg.src;
                     };
                     preloadImg.onerror = () => {
                         console.warn('IPFS Gateway timeout. Retaining generic visual.');
+                        // Fallback to a secondary public IPFS gateway if Pinata fails
+                        if (metadata.image) {
+                            const cid = metadata.image.replace('ipfs://', '');
+                            imgElement.src = `https://ipfs.io/ipfs/${cid}`;
+                        }
+                    };
+                    preloadImg.src = metadata.gateway_image_url;
+                } else if (tokenId) {
+                    // Fallback to our proxy if for some reason gateway_image_url is missing
+                    const preloadImg = new Image();
+                    preloadImg.onload = () => {
+                        imgElement.src = preloadImg.src;
                     };
                     preloadImg.src = `/api/image/${tokenId}`;
                 }
