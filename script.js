@@ -143,7 +143,7 @@ function createTextLabel(text, colorHex) {
         transparent: true
     });
     const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(30, 7.5, 1); // Scale it nicely
+    sprite.scale.set(33, 8.25, 1); // Increased size by 10%
     return sprite;
 }
 
