@@ -36,66 +36,59 @@ universeGroup.add(coreGroup);
 // Function to generate the high-res center UI text as a texture
 function createCenterUISprite() {
     const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 1024;
+    canvas.width = 4096;
+    canvas.height = 2048;
     const ctx = canvas.getContext('2d');
     
-    // Glow behind Toby (approximate position)
-    const gradient = ctx.createRadialGradient(512, 200, 0, 512, 200, 300);
-    gradient.addColorStop(0, 'rgba(0, 255, 255, 0.8)'); // Intense bright cyan/blue
+    // Glow behind Toby
+    const gradient = ctx.createRadialGradient(2048, 400, 0, 2048, 400, 1200);
+    gradient.addColorStop(0, 'rgba(0, 255, 255, 0.8)');
     gradient.addColorStop(0.5, 'rgba(0, 100, 255, 0.4)');
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1024, 1024);
+    ctx.fillRect(0, 0, 4096, 2048);
 
-    // Title
+    // Title (Kept identical physical size)
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = "Bold 130px 'Courier New', monospace";
+    ctx.font = "Bold 260px 'Courier New', monospace";
     ctx.fillStyle = "#ffffff";
     ctx.shadowColor = "rgba(0, 255, 255, 0.8)";
-    ctx.shadowBlur = 30;
-    ctx.fillText("TOBY", 512, 450);
-    ctx.fillText("WORLD", 512, 580);
+    ctx.shadowBlur = 60;
+    ctx.fillText("TOBY", 2048, 900);
+    ctx.fillText("WORLD", 2048, 1160);
     
     // Reset shadow
     ctx.shadowBlur = 0;
 
-    // Dots (9 island colors)
+    // Dots (9 island colors, 300% Larger)
     const dotColors = [
-        "#ff4400", // Emberreach
-        "#66ccff", // Frostveil
-        "#22ff55", // Meadow
-        "#33ff99", // Mossmere
-        "#9933ff", // Sporegrove
-        "#00ccff", // Stillwater
-        "#ffcc00", // Sunfield
-        "#0088ff", // ThePond
-        "#cc00ff"  // Waystones
+        "#ff4400", "#66ccff", "#22ff55", "#33ff99", "#9933ff", "#00ccff", "#ffcc00", "#0088ff", "#cc00ff"
     ];
-    const dotSpacing = 35;
-    const startX = 512 - (dotSpacing * 4); // Centers 9 dots
+    const dotSpacing = 210;
+    const startX = 2048 - (dotSpacing * 4); // Centers 9 dots
     for(let i=0; i<9; i++) {
         ctx.beginPath();
-        ctx.arc(startX + i * dotSpacing, 700, 10, 0, Math.PI * 2);
+        ctx.arc(startX + i * dotSpacing, 1500, 60, 0, Math.PI * 2);
         ctx.fillStyle = dotColors[i];
         ctx.shadowColor = dotColors[i];
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 60;
         ctx.fill();
     }
     
-    // Stats
-    ctx.shadowBlur = 10;
+    // Stats (300% Larger, wrapped to 2 lines to fit)
+    ctx.shadowBlur = 30;
     ctx.shadowColor = "rgba(122, 180, 255, 0.5)";
-    ctx.font = "Bold 24px 'Courier New', monospace";
+    ctx.font = "Bold 144px 'Courier New', monospace";
     ctx.fillStyle = "#7ab4ff";
-    ctx.fillText("BACKGROUND 4 · CORE 6 · KEEPER 3 · LAND 9 · RELIC 6", 512, 800);
+    ctx.fillText("BACKGROUND 4 • CORE 6 • KEEPER 3", 2048, 1750);
+    ctx.fillText("LAND 9 • RELIC 6", 2048, 1920);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.minFilter = THREE.LinearFilter;
     const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
     const sprite = new THREE.Sprite(mat);
-    sprite.scale.set(58, 58, 1);
+    sprite.scale.set(232, 116, 1);
     sprite.position.z = 25;
     return sprite;
 }
