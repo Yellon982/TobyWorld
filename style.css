@@ -432,6 +432,29 @@ body::after {
     object-fit: cover;
 }
 
+.toby-link {
+    position: absolute;
+    top: 160px;
+    right: 20px;
+    z-index: 999;
+    pointer-events: auto;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.toby-link:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 10px #00ffff);
+}
+
+.toby-link img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid #00ffff;
+    background: rgba(0,20,30,0.8);
+    object-fit: cover;
+}
+
 .search-instruction {
     position: absolute;
     bottom: 40px;
@@ -476,6 +499,15 @@ body::after {
         right: 10px;
     }
     .pond-link img {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .toby-link {
+        top: 130px;
+        right: 10px;
+    }
+    .toby-link img {
         width: 45px;
         height: 45px;
     }
