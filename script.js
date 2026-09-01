@@ -440,10 +440,18 @@ window.addEventListener('pointermove', (event) => {
 });
 
 function animateIslandExpansion(sprite, onComplete) {
+    // 1. Get current world position to avoid visual jumping
+    const startPos = new THREE.Vector3();
+    sprite.getWorldPosition(startPos);
+    
+    // 2. Detach from the rotating group and add directly to the scene
+    scene.add(sprite);
+    sprite.position.copy(startPos);
+    
     const startScale = sprite.scale.clone();
     const endScale = new THREE.Vector3(startScale.x * 6, startScale.y * 6, 1);
     
-    const startPos = sprite.position.clone();
+    // 3. Target the absolute center of the camera
     const endPos = new THREE.Vector3(0, 0, camera.position.z - 100);
 
     const duration = 600; // ms
