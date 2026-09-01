@@ -262,12 +262,25 @@ app.get('/api/pond-amm', async (req, res) => {
     try {
         const response = await fetch('https://tobyworld.app/world/');
         let html = await response.text();
-        // Inject base tag so assets load correctly
-        html = html.replace(/<head>/i, '<head><base href="https://tobyworld.app/world/">');
+        // Remove base tag, let requests go to our own /world/ proxy
         res.send(html);
     } catch (error) {
         console.error("Proxy error:", error);
         res.status(500).send("Error loading AMM");
+    }
+});
+
+// Proxy assets to bypass CORS
+app.get('/world/*', async (req, res) => {
+    try {
+        const assetPath = req.params[0];
+        const response = await fetch('https://tobyworld.app/world/' + assetPath);
+        const contentType = response.headers.get('content-type');
+        const text = await response.text();
+        if (contentType) res.set('Content-Type', contentType);
+        res.send(text);
+    } catch (error) {
+        res.status(500).send("Asset proxy error");
     }
 });
 
