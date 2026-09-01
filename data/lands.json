@@ -11699,6 +11699,21 @@
       "Keeper": "Satoby"
     }
   },
+  "782": {
+    "tokenId": 782,
+    "name": "Lore Land Deed #782",
+    "description": "One of 2,869 canonical Lore Land Deeds of Tobyworld. Genesis forged the path. Five signs shape each realm - Background, Land, Core, Relic and Keeper. No land walks the same journey. What was forged remains. The pond remembers.",
+    "image": "ipfs://Qmed1JLXbnQ5XzuadNJSsttqBhovmM2NdNqwFFaTsgBb5N/782.png",
+    "gateway_image_url": "https://gateway.pinata.cloud/ipfs/Qmed1JLXbnQ5XzuadNJSsttqBhovmM2NdNqwFFaTsgBb5N/782.png",
+    "external_url": "https://tobyworld.app/twpot/",
+    "attributes": {
+      "Background": "Cloudwake",
+      "Land": "Mossmere",
+      "Core": "Eclipse",
+      "Relic": "Gate Key",
+      "Keeper": "Hush"
+    }
+  },
   "783": {
     "tokenId": 783,
     "name": "Lore Land Deed #783",
@@ -11787,6 +11802,21 @@
       "Core": "Taboshi",
       "Relic": "Ancient Rune",
       "Keeper": "Hush"
+    }
+  },
+  "789": {
+    "tokenId": 789,
+    "name": "Lore Land Deed #789",
+    "description": "One of 2,869 canonical Lore Land Deeds of Tobyworld. Genesis forged the path. Five signs shape each realm - Background, Land, Core, Relic and Keeper. No land walks the same journey. What was forged remains. The pond remembers.",
+    "image": "ipfs://Qmed1JLXbnQ5XzuadNJSsttqBhovmM2NdNqwFFaTsgBb5N/789.png",
+    "gateway_image_url": "https://gateway.pinata.cloud/ipfs/Qmed1JLXbnQ5XzuadNJSsttqBhovmM2NdNqwFFaTsgBb5N/789.png",
+    "external_url": "https://tobyworld.app/twpot/",
+    "attributes": {
+      "Background": "Violet Dusk",
+      "Land": "Waystones",
+      "Core": "Shard",
+      "Relic": "Gate Key",
+      "Keeper": "Satoby"
     }
   },
   "790": {
@@ -25346,6 +25376,21 @@
       "Land": "Stillwater",
       "Core": "Taboshi",
       "Relic": "Seed Vessel",
+      "Keeper": "Satoby"
+    }
+  },
+  "2825": {
+    "tokenId": 2825,
+    "name": "Lore Land Deed #2825",
+    "description": "One of 2,869 canonical Lore Land Deeds of Tobyworld. Genesis forged the path. Five signs shape each realm - Background, Land, Core, Relic and Keeper. No land walks the same journey. What was forged remains. The pond remembers.",
+    "image": "ipfs://QmV8bDmqR8RsfxXeCktisAfFH2RKTkCydxLUwZ9pFUHpnD/2825.png",
+    "gateway_image_url": "https://gateway.pinata.cloud/ipfs/QmV8bDmqR8RsfxXeCktisAfFH2RKTkCydxLUwZ9pFUHpnD/2825.png",
+    "external_url": "https://tobyworld.app/twpot/",
+    "attributes": {
+      "Background": "Verdant Veil",
+      "Land": "The Pond",
+      "Core": "Patience",
+      "Relic": "Ancient Rune",
       "Keeper": "Satoby"
     }
   },
