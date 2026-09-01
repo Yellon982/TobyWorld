@@ -40,14 +40,6 @@ function createCenterUISprite() {
     canvas.height = 2048;
     const ctx = canvas.getContext('2d');
     
-    // Glow behind Toby
-    const gradient = ctx.createRadialGradient(2048, 400, 0, 2048, 400, 1200);
-    gradient.addColorStop(0, 'rgba(0, 255, 255, 0.8)');
-    gradient.addColorStop(0.5, 'rgba(0, 100, 255, 0.4)');
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 4096, 2048);
-
     // Title (Kept identical physical size)
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
