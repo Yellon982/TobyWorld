@@ -257,20 +257,6 @@ app.get('/api/image/:tokenId', async (req, res) => {
     }
 });
 
-// GET /api/pond-amm (Proxy to bypass X-Frame-Options)
-app.get('/api/pond-amm', async (req, res) => {
-    try {
-        const response = await fetch('https://tobyworld.app/world/');
-        let html = await response.text();
-        // Inject base tag so assets load correctly
-        html = html.replace(/<head>/i, '<head><base href="https://tobyworld.app/world/">');
-        res.send(html);
-    } catch (error) {
-        console.error("Proxy error:", error);
-        res.status(500).send("Error loading AMM");
-    }
-});
-
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`TobyWorld API running on port ${PORT}`);
