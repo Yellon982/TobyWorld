@@ -372,42 +372,72 @@ body::after {
     display: flex;
     gap: 10px;
     pointer-events: auto;
-    width: auto;
+    align-items: center;
+}
+
+.search-box {
+    display: flex;
+    background: rgba(0,20,30,0.6);
+    border: 1px solid rgba(0,255,255,0.4);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,255,255,0.1);
 }
 
 #deed-search-input {
-    background: rgba(0,20,30,0.8);
-    border: 1px solid #00ffff;
+    background: transparent;
+    border: none;
     color: #00ffff;
     font-family: 'Share Tech Mono', monospace;
-    padding: 10px 15px;
+    padding: 8px 12px;
     outline: none;
-    width: 220px;
-    font-size: 16px;
+    width: 140px;
+    font-size: 14px;
+}
+
+#deed-search-input::placeholder {
+    color: rgba(0,255,255,0.4);
 }
 
 #deed-search-btn {
-    padding: 10px 20px;
-    cursor: pointer;
-    font-family: 'Share Tech Mono', monospace;
-    color: #00ffff;
-    font-size: 16px;
-    font-weight: bold;
+    padding: 8px 15px;
+    background: rgba(0,255,255,0.1);
+    border: none;
+    border-left: 1px solid rgba(0,255,255,0.4);
+    font-size: 14px;
+    margin: 0;
+    box-shadow: none;
+}
+
+#pond-amm-btn {
+    padding: 8px 15px;
+    font-size: 14px;
+    background: rgba(0,255,255,0.1);
+    border: 1px solid rgba(0,255,255,0.4);
+    border-radius: 4px;
+    margin: 0;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .search-instruction {
     position: absolute;
-    top: 75px;
-    left: 20px;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 999;
     pointer-events: none;
     color: #00ffff;
     font-family: 'Share Tech Mono', monospace;
-    font-size: 14px;
-    opacity: 0.8;
-    background: rgba(0,20,30,0.6);
-    padding: 6px 12px;
-    border-left: 2px solid #00ffff;
+    font-size: 16px;
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+    text-align: center;
+    width: 100%;
+    letter-spacing: 2px;
+    background: transparent;
+    border: none;
 }
 
 /* Mobile Tweaks */
@@ -415,28 +445,32 @@ body::after {
     .search-container {
         left: 50%;
         transform: translateX(-50%);
-        width: 90vw;
-        max-width: 350px;
         flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 8px;
     }
+    
+    .search-box {
+        width: 280px;
+    }
+    
     #deed-search-input {
-        width: 100%;
-        box-sizing: border-box;
+        flex: 1;
+        width: auto;
         text-align: center;
     }
-    #deed-search-btn {
-        width: 100%;
+    
+    #pond-amm-btn {
+        width: 280px;
+        text-align: center;
+        box-sizing: border-box;
     }
+
     .search-instruction {
-        top: 130px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 90vw;
-        max-width: 350px;
-        text-align: center;
-        box-sizing: border-box;
-        border-left: none;
-        border-top: 2px solid #00ffff;
+        bottom: 20px;
+        font-size: 12px;
+        letter-spacing: 1px;
     }
     
     /* Ensure the land details modal also fits perfectly */
