@@ -141,7 +141,6 @@
     </div>
 
     <div class="land-container">
-        <h1 class="land-title" id="land-type" style="margin-top: 0; margin-bottom: 1.5rem;">LOADING...</h1>
         <img id="land-image" src="" alt="Land Image">
         <h1 class="land-title" id="land-name">LOADING...</h1>
         <h3 id="land-rank" style="color: #ffaa00; text-align: center; margin-top: -10px; margin-bottom: 20px; font-family: 'Share Tech Mono', monospace; letter-spacing: 2px; text-shadow: 0 0 10px #ffaa00;"></h3>
@@ -187,12 +186,7 @@
 
         // Setup UI base (will be updated by API)
         const nameDisplay = islandId.toUpperCase() === "THEPOND" ? "THE POND" : islandId.toUpperCase();
-        
-        document.getElementById('land-type').innerText = nameDisplay;
-        document.getElementById('land-type').style.color = islandColor;
-        document.getElementById('land-type').style.textShadow = `0 0 20px ${islandColor}, 0 0 50px ${islandColor}`;
-
-        document.getElementById('land-name').innerText = `LORE LAND DEED #${tokenId}`;
+        document.getElementById('land-name').innerText = nameDisplay;
         document.getElementById('land-name').style.color = islandColor;
         document.getElementById('land-name').style.textShadow = `0 0 20px ${islandColor}, 0 0 50px ${islandColor}`;
         
