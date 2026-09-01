@@ -68,13 +68,13 @@ function createCenterUISprite() {
         ctx.fill();
     }
     
-    // Stats (300% Larger, wrapped to 2 lines to fit)
+    // Stats (Wrapped to 2 lines, pluralized)
     ctx.shadowBlur = 30;
     ctx.shadowColor = "rgba(122, 180, 255, 0.5)";
-    ctx.font = "Bold 144px 'Courier New', monospace";
+    ctx.font = "Bold 72px 'Courier New', monospace";
     ctx.fillStyle = "#7ab4ff";
-    ctx.fillText("BACKGROUND 4 • CORE 6 • KEEPER 3", 2048, 1750);
-    ctx.fillText("LAND 9 • RELIC 6", 2048, 1920);
+    ctx.fillText("BACKGROUNDS 4 • CORES 6 • KEEPERS 3", 2048, 1750);
+    ctx.fillText("LANDS 9 • RELICS 6", 2048, 1860);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.minFilter = THREE.LinearFilter;
