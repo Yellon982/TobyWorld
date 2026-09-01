@@ -666,26 +666,3 @@ if (searchBtn && searchInput) {
 }
 
 
-// --- POND AMM MODAL LOGIC ---
-const pondBtn = document.getElementById('pond-amm-btn');
-const pondModal = document.getElementById('pond-modal');
-const closePondBtn = document.getElementById('close-pond');
-
-if (pondBtn && pondModal && closePondBtn) {
-    pondBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        pondModal.style.display = 'flex';
-    });
-
-    closePondBtn.addEventListener('click', () => {
-        pondModal.style.display = 'none';
-    });
-
-    // Close when clicking outside the modal content
-    pondModal.addEventListener('click', (e) => {
-        if (e.target === pondModal) {
-            pondModal.style.display = 'none';
-        }
-    });
-}
-
