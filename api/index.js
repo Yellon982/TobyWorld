@@ -257,8 +257,7 @@ app.get('/api/image/:tokenId', async (req, res) => {
     }
 });
 
-if (require.main === module) {
-    // GET /api/pond-amm (Proxy to bypass X-Frame-Options)
+// GET /api/pond-amm (Proxy to bypass X-Frame-Options)
 app.get('/api/pond-amm', async (req, res) => {
     try {
         const response = await fetch('https://tobyworld.app/world/');
@@ -272,7 +271,8 @@ app.get('/api/pond-amm', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+if (require.main === module) {
+    app.listen(PORT, () => {
         console.log(`TobyWorld API running on port ${PORT}`);
     });
 }
