@@ -9,7 +9,7 @@ updateCameraForMobile();
 camera.position.y = 30;
 camera.lookAt(0, 0, 0);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+const renderer = new THREE.WebGLRenderer({ alpha: true }); // Disabled antialias to fix Firefox Mobile interlacing bug
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x000208, 1);
@@ -154,12 +154,12 @@ function createAura(colorHex) {
     canvas.width = 128;
     canvas.height = 128;
     
-    // Radial gradient from color to transparent black
+    // Radial gradient from color to transparent color (prevents dark noise borders)
     const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
     // Tighter falloff for a more controlled glow
     gradient.addColorStop(0, colorHex);
     gradient.addColorStop(0.5, colorHex);
-    gradient.addColorStop(1, 'rgba(0,0,0,0)'); // Transparent for NormalBlending
+    gradient.addColorStop(1, colorHex + '00'); // Transparent for NormalBlending
     
     context.fillStyle = gradient;
     context.fillRect(0, 0, 128, 128);
