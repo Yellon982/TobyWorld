@@ -447,12 +447,14 @@ body::after {
 }
 
 .faucet-link img {
+    box-sizing: border-box;
     width: 60px;
     height: 60px;
     border-radius: 50%;
     border: 2px solid #00ffff;
     background: rgba(0,20,30,0.8);
-    object-fit: cover;
+    object-fit: contain;
+    padding: 7px;
 }
 
 .toby-link {
