@@ -454,7 +454,7 @@ body::after {
     border: 2px solid #00ffff;
     background: rgba(0,20,30,0.8);
     object-fit: contain;
-    padding: 7px;
+    padding: 2px;
 }
 
 .toby-link {
