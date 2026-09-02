@@ -156,9 +156,9 @@ function createAura(colorHex) {
     
     // Radial gradient from color to transparent color (prevents dark noise borders)
     const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
-    // Tighter falloff for a more controlled glow
+    // Extremely soft and subtle falloff
     gradient.addColorStop(0, colorHex);
-    gradient.addColorStop(0.5, colorHex);
+    gradient.addColorStop(0.1, colorHex);
     gradient.addColorStop(1, colorHex + '00'); // Transparent for NormalBlending
     
     context.fillStyle = gradient;
@@ -168,8 +168,8 @@ function createAura(colorHex) {
     const spriteMaterial = new THREE.SpriteMaterial({ 
         map: texture, 
         transparent: true,
-        blending: THREE.NormalBlending, // Fix washout of background islands
-        opacity: 0.5, // Softer opacity since it's normal blending
+        blending: THREE.NormalBlending, 
+        opacity: 0.15, // Super subtle glow
         depthWrite: false
     });
     const sprite = new THREE.Sprite(spriteMaterial);
@@ -244,7 +244,7 @@ function buildIslands() {
         
         // 1. Create and add the Aura behind the island
         const auraSprite = createAura(colorHex);
-        auraSprite.position.z = -0.1; // Push it just slightly back to prevent z-fighting without perspective uncentering
+        auraSprite.position.z = -2.0; // Pushed safely behind the island to ensure it never overlaps the front
         islandGroup.add(auraSprite);
 
         // 2. Load the original generic island PNG as a sprite
