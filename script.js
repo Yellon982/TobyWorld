@@ -332,7 +332,7 @@ function animate() {
 
 
     // Orbit lorelands globally (keeps them evenly spaced)
-    lorelandsGroup.rotation.y = time * 0.001;
+    lorelandsGroup.rotation.y = time * 0.00115;
 
     // Dynamic local floating for each loreland
     lorelands.forEach(l => {
