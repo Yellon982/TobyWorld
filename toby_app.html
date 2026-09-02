@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="uploads/logo.png" />
+<title>$TOBY — frog of Base</title>
+<meta name="description" content="the pond has been still for many moons, but stillness was never sleep. beneath the reeds, old roots have begun to move. forgotten runes hum beneath the water. the gates of a new epoch loosen, one stone at a time. soon, the world will awaken not with thunder, but with the quiet return of those who waited. new lands will rise from the mist. new paths will open beyond the garden. what was planted in silence will bloom beneath an endless sun. the cold seasons are passing. keep your place by the water. infinite summers are ahead." />
+<style>
+  html { overflow-x: hidden; }
+  html, body { margin: 0; padding: 0; background: #fbfbfa; }
+  * { box-sizing: border-box; }
+  a { color: #111110; text-decoration: none; }
+  a:hover { color: #55534d; }
+  ::selection { background: rgba(150,180,255,0.25); }
+
+  /* End-of-film cinematic CTA (fades in ~enterWorldCtaAtSeconds, lower-center, above player controls) */
+  .tw-cta { position: absolute; left: 50%; bottom: clamp(52px, 14%, 82px); z-index: 5; display: inline-flex; align-items: center; gap: 9px; max-width: calc(100% - 28px); padding: 11px 20px; border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: clamp(10px, 1.05vw, 12px); letter-spacing: 0.18em; text-transform: uppercase; white-space: nowrap; color: #ffffff; text-decoration: none; background: rgba(14,16,22,0.5); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.45); box-shadow: 0 8px 30px -10px rgba(0,0,0,0.6); opacity: 0; transform: translate(-50%, 10px); pointer-events: none; transition: opacity 0.7s ease, transform 0.7s ease, background 0.3s ease, border-color 0.3s ease; }
+  .tw-cta.is-visible { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .tw-cta:hover { background: rgba(22,25,33,0.7); border-color: rgba(255,255,255,0.75); color: #ffffff; }
+  .tw-cta:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+  .tw-cta .tw-cta-arrow { transition: transform 0.3s ease; }
+  .tw-cta:hover .tw-cta-arrow { transform: translateX(3px); }
+  @media (prefers-reduced-motion: reduce) {
+    .tw-cta { transition: opacity 0.45s ease; transform: translate(-50%, 0); }
+    .tw-cta.is-visible { transform: translate(-50%, 0); }
+    .tw-cta .tw-cta-arrow, .tw-cta:hover .tw-cta-arrow { transition: none; transform: none; }
+  }
+
+  /* Minimal, Tobyworld-native cinematic player (custom controls over hls.js / native HLS) */
+  .tw-player { position: absolute; inset: 0; overflow: hidden; background: #0e0f12; }
+  .tw-player * { box-sizing: border-box; }
+  .tw-video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: contain; background: #0e0f12; }
+  .tw-btn { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; padding: 0; border: 0; background: transparent; color: #fff; cursor: pointer; border-radius: 8px; opacity: 0.92; transition: opacity 0.2s ease, background 0.2s ease; flex: none; }
+  .tw-btn:hover { opacity: 1; background: rgba(255,255,255,0.12); }
+  .tw-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .tw-btn svg { width: 22px; height: 22px; fill: currentColor; }
+  .tw-bigplay { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: clamp(58px,9vw,80px); height: clamp(58px,9vw,80px); border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; background: rgba(16,18,24,0.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); color: #fff; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 10px 34px -10px rgba(0,0,0,0.55); transition: transform 0.3s ease, background 0.3s ease; }
+  .tw-player.is-paused .tw-bigplay { display: flex; }
+  .tw-bigplay:hover { background: rgba(16,18,24,0.68); transform: translate(-50%,-50%) scale(1.06); }
+  .tw-bigplay svg { width: 30px; height: 30px; fill: #fff; margin-left: 3px; }
+  .tw-spin { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.25); border-top-color: #fff; display: none; animation: tw-spin 0.9s linear infinite; }
+  .tw-player.is-loading .tw-spin, .tw-player.is-buffering .tw-spin { display: block; }
+  .tw-player.is-loading .tw-bigplay, .tw-player.is-buffering .tw-bigplay { display: none; }
+  @keyframes tw-spin { to { transform: rotate(360deg); } }
+  .tw-ctrls { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; display: flex; align-items: center; gap: 6px; padding: 8px clamp(8px,1.4vw,16px) 10px; background: linear-gradient(to top, rgba(0,0,0,0.62), rgba(0,0,0,0.28) 55%, transparent); opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; }
+  .tw-player.show-ctrls .tw-ctrls, .tw-player.is-paused .tw-ctrls { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .tw-seek { flex: 1 1 auto; position: relative; height: 34px; display: flex; align-items: center; min-width: 50px; }
+  .tw-seek-track { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 4px; border-radius: 3px; background: rgba(255,255,255,0.25); overflow: hidden; pointer-events: none; }
+  .tw-seek-buf { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,255,255,0.35); }
+  .tw-seek-prog { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #5bb0f0; }
+  .tw-seek-range { position: absolute; inset: 0; width: 100%; height: 34px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
+  .tw-seek-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+  .tw-seek-range::-moz-range-thumb { width: 13px; height: 13px; border: 0; border-radius: 50%; background: #fff; }
+  .tw-time { display: flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: rgba(255,255,255,0.85); flex: none; white-space: nowrap; }
+  .tw-time .tw-sep { opacity: 0.5; }
+  .tw-vol { display: flex; align-items: center; flex: none; }
+  .tw-vol-range { width: 0; opacity: 0; margin: 0; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 3px; background: rgba(255,255,255,0.3); cursor: pointer; transition: width 0.25s ease, opacity 0.25s ease, margin 0.25s ease; }
+  .tw-vol:hover .tw-vol-range, .tw-vol:focus-within .tw-vol-range { width: 62px; opacity: 1; margin: 0 6px 0 2px; }
+  .tw-vol-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+  .tw-vol-range::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: #fff; }
+  .tw-q { position: relative; flex: none; }
+  .tw-q-btn { width: auto; padding: 0 10px; height: 32px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #fff; }
+  .tw-q-menu { position: absolute; right: 0; bottom: 42px; min-width: 96px; padding: 6px; border-radius: 10px; background: rgba(16,18,24,0.92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 10px 30px -8px rgba(0,0,0,0.6); display: none; flex-direction: column; gap: 2px; }
+  .tw-player.q-open .tw-q-menu { display: flex; }
+  .tw-q-opt { display: block; width: 100%; text-align: left; padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; color: rgba(255,255,255,0.82); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.06em; cursor: pointer; }
+  .tw-q-opt:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .tw-q-opt.is-active { color: #5bb0f0; }
+  @media (max-width: 600px) {
+    .tw-btn { width: 34px; height: 34px; }
+    .tw-btn svg { width: 20px; height: 20px; }
+    .tw-time { font-size: 10px; }
+    .tw-vol-range { display: none; }
+    .tw-q-btn { font-size: 9px; padding: 0 7px; }
+    .tw-ctrls { gap: 3px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tw-ctrls { transition: opacity 0.2s ease; transform: none; }
+    .tw-spin { animation-duration: 1.4s; }
+    .tw-bigplay { transition: opacity 0.2s ease; }
+  }
+</style>
+</helmet>
+
+<div style="position: relative; min-height: 100vh; width: 100%; background: #fbfbfa; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #111110;">
+
+  <div style="position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: radial-gradient(rgba(17,17,16,0.13) 1px, transparent 1px); background-size: 26px 26px; opacity: 0.55;"></div>
+  <div style="position: fixed; inset: 0; pointer-events: none; z-index: 1; background: radial-gradient(120% 80% at 50% 0%, rgba(251,251,250,0) 40%, rgba(251,251,250,0.85) 100%);"></div>
+
+  <div style="position: relative; z-index: 2;">
+
+    <header style="position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px clamp(20px, 5vw, 64px); backdrop-filter: blur(14px); background: rgba(251,251,250,0.72); border-bottom: 1px solid rgba(17,17,16,0.07);">
+      <a href="#top" style="display: flex; align-items: center; gap: 11px;">
+        <img src="uploads/logo.png" alt="Toby" style="display: block; width: 41px; height: 41px; object-fit: contain;" />
+      </a>
+      <nav style="display: flex; align-items: center; gap: clamp(18px, 3vw, 40px);">
+        <a href="https://opensea.io/collection/tobyworld-canonical-lore-land-deeds/overview" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #c3c1ba; cursor: pointer; padding: 7px 12px; border-radius: 999px; border: 1px solid transparent; background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), border-color 0.4s ease, color 0.4s ease;" style-hover="background-position: 290% 0; border-color: rgba(17,17,16,0.07); color: #8e8c85;">Lore Land</a>
+        <span style="display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #c3c1ba; cursor: default; padding: 7px 12px; border-radius: 999px; border: 1px solid transparent; background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), border-color 0.4s ease, color 0.4s ease;" style-hover="background-position: 290% 0; border-color: rgba(17,17,16,0.07); color: #8e8c85;">RUNE3<sc-if value="{{ showSoon }}" hint-placeholder-val="{{ true }}"><span style="font-size: 9px; letter-spacing: 0.1em; color: #d6d4cd;">soon</span></sc-if></span>
+        <a href="/world" style="display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #c3c1ba; cursor: pointer; padding: 7px 12px; border-radius: 999px; border: 1px solid transparent; background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), border-color 0.4s ease, color 0.4s ease;" style-hover="background-position: 290% 0; border-color: rgba(17,17,16,0.07); color: #8e8c85;">TOBYWORLD</a>
+      </nav>
+    </header>
+
+    <main id="top" style="display: flex; flex-direction: column; align-items: center; padding: clamp(34px, 5vh, 58px) clamp(20px, 5vw, 64px) 0;">
+
+      <div style="width: 100%; max-width: 1000px; display: flex; justify-content: center; padding-bottom: clamp(20px, 3.5vh, 34px);">
+        <img src="uploads/wordmark.png" alt="Toby World" style="display: block; width: 190px; max-width: 60vw; height: auto;" />
+      </div>
+
+      <div style="width: 100%; max-width: 1000px; position: relative;">
+        <div style="position: absolute; inset: -14px; border-radius: 26px; background: radial-gradient(60% 60% at 30% 20%, rgba(150,180,255,0.10), transparent 70%), radial-gradient(60% 60% at 75% 80%, rgba(255,190,150,0.10), transparent 70%); filter: blur(22px); pointer-events: none;"></div>
+        <div style="position: relative; border-radius: 20px; overflow: hidden; border: 1px solid rgba(17,17,16,0.08); background: #0e0f12; box-shadow: 0 1px 1px rgba(17,17,16,0.03), 0 24px 60px -24px rgba(17,17,16,0.16), inset 0 1px 0 rgba(255,255,255,0.9);">
+          <div ref="{{ cinematicRef }}" style="position: relative; width: 100%; padding-top: 56.25%; background: #0e0f12;"></div>
+        </div>
+      </div>
+
+      <div style="width: 100%; max-width: 1000px; display: flex; justify-content: flex-end; gap: 8px; padding-top: 14px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #b5b3ac;">
+        <span>Lore artist featured @jupitersstorms</span>
+      </div>
+
+      <section style="width: 100%; max-width: 1000px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 32px; padding: clamp(40px, 7vh, 76px) 0 clamp(40px, 7vh, 72px);">
+        <h1 style="margin: 0; font-size: clamp(44px, 7.5vw, 96px); font-weight: 400; letter-spacing: -0.035em; line-height: 0.98; text-wrap: pretty;">Do you believe?</h1>
+        <p style="margin: 0; max-width: 400px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.85; letter-spacing: 0.02em; color: #7c7a74; text-wrap: pretty;">a global fair onchain economy for the fallen frogs.<br />忍耐 patient hearts beat loudest.</p>
+        <div style="flex-basis: 100%; display: flex; justify-content: flex-end;">
+          <a href="https://tobyworld.app/faucet" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border: 1px solid rgba(17,17,16,0.07); border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #9a9891; background-color: rgba(255,255,255,0.4); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.03), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease, color 0.4s ease; white-space: nowrap;" style-hover="background-position: 290% 0; transform: translateY(-1px); color: #6b6a64; box-shadow: 0 8px 22px -12px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">new toad?<span style="color: #c3c1ba;">↗</span></a>
+        </div>
+      </section>
+
+      <section style="width: 100%; max-width: 1000px; border-top: 1px solid rgba(17,17,16,0.09); padding-top: 22px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: #a8a69f;">Contract</span>
+          <button type="button" onClick="{{ copyContract }}" style="display: flex; align-items: center; gap: 16px; max-width: 100%; padding: 13px 20px; border: 1px solid rgba(17,17,16,0.07); border-radius: 999px; cursor: pointer; text-align: left; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-1px); box-shadow: 0 10px 28px -14px rgba(17,17,16,0.28), inset 0 1px 0 rgba(255,255,255,0.9);">
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.01em; color: #2b2a27; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">0xb8D98a102b0079B69FFbc760C8d857A31653e56e</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #9a9891; white-space: nowrap;">{{ copyLabel }}</span>
+          </button>
+        </div>
+      </section>
+
+      <section style="width: 100%; max-width: 1000px; padding: clamp(56px, 9vh, 96px) 0 0;">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 30px;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: #a8a69f;">$TOBY Tokenomics</span>
+          <span style="flex: 1; height: 1px; background: rgba(17,17,16,0.09);"></span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 32px 26px; border: 1px solid rgba(17,17,16,0.09); border-bottom: none; background: rgba(251,251,250,0.9);">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #a8a69f;">Total supply</span>
+          <span style="font-size: clamp(28px, 4.4vw, 52px); font-weight: 400; letter-spacing: -0.035em; line-height: 1;">420,000,000,000,000 <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.34em; letter-spacing: 0.12em; color: #9a9891; vertical-align: middle;">$TOBY</span></span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: rgba(17,17,16,0.09); border: 1px solid rgba(17,17,16,0.09);">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 28px 24px; background: rgba(251,251,250,0.9);">
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #a8a69f;">Airdrop</span>
+            <span style="font-size: 30px; font-weight: 400; letter-spacing: -0.025em; line-height: 1;">70%</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.6; color: #7c7a74;">1.42 million onchain addresses</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 28px 24px; background: rgba(251,251,250,0.9);">
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #a8a69f;">Liquidity pool</span>
+            <span style="font-size: 30px; font-weight: 400; letter-spacing: -0.025em; line-height: 1;">20%</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.6; color: #7c7a74;"><a href="https://basescan.org/tx/0xbf757edbef9d49d710930cfb07d99d77067bee0f6d06f69d1dc7c47899b438f3" target="_blank" rel="noopener" style="color: inherit;">LP burned &mdash; details here</a></span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 28px 24px; background: rgba(251,251,250,0.9);">
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #a8a69f;">Reserve</span>
+            <span style="font-size: 30px; font-weight: 400; letter-spacing: -0.025em; line-height: 1;">10%</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.6; color: #7c7a74;"><a href="https://twitter.com/toadgod1017/status/1769430423283646862" target="_blank" rel="noopener" style="color: inherit;">Token details here</a></span>
+          </div>
+        </div>
+      </section>
+
+      <section style="width: 100%; max-width: 1000px; padding: clamp(56px, 9vh, 96px) 0 0;">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 30px;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: #a8a69f;">Ecosystem</span>
+          <span style="flex: 1; height: 1px; background: rgba(17,17,16,0.09);"></span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+          <a href="https://dexscreener.com/base/0x0bd7f7868c2eacef768790ca4e6c3b53f09ab5be" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 16px; padding: 20px 22px; border: 1px solid rgba(17,17,16,0.07); border-radius: 16px; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-2px); box-shadow: 0 12px 30px -14px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">
+            <img src="uploads/pasted-1785880946617-0.png" alt="Taboshi" style="flex: none; width: 42px; height: 42px; object-fit: contain; mix-blend-mode: multiply;" />
+            <span style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+              <span style="font-family: 'Baloo 2', 'Helvetica Neue', sans-serif; font-size: 17px; font-weight: 600; line-height: 1;">taboshi</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #9a9891;">$TABOSHI</span>
+            </span>
+            <span style="margin-left: auto; color: #c3c1ba;">&#8599;</span>
+          </a>
+          <a href="https://dexscreener.com/base/0xef4afdef77cb521760d82ac0ed1b6d3007bdbd37" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 16px; padding: 20px 22px; border: 1px solid rgba(17,17,16,0.07); border-radius: 16px; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-2px); box-shadow: 0 12px 30px -14px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">
+            <img src="uploads/pasted-1785880901018-0.png" alt="Patience" style="flex: none; width: 42px; height: 42px; object-fit: contain; mix-blend-mode: multiply;" />
+            <span style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+              <span style="font-family: 'Baloo 2', 'Helvetica Neue', sans-serif; font-size: 17px; font-weight: 600; line-height: 1;">patience</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #9a9891;">$PATIENCE</span>
+            </span>
+            <span style="margin-left: auto; color: #c3c1ba;">&#8599;</span>
+          </a>
+          <a href="https://dexscreener.com/base/0xfe83058f06869da5d70a1355dca64c873480ab1d" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 16px; padding: 20px 22px; border: 1px solid rgba(17,17,16,0.07); border-radius: 16px; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-2px); box-shadow: 0 12px 30px -14px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">
+            <img src="uploads/logo.png" alt="Toby" style="flex: none; width: 42px; height: 42px; object-fit: contain;" />
+            <span style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+              <span style="font-family: 'Baloo 2', 'Helvetica Neue', sans-serif; font-size: 17px; font-weight: 600; line-height: 1;">toby</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #9a9891;">$TOBY</span>
+            </span>
+            <span style="margin-left: auto; color: #c3c1ba;">&#8599;</span>
+          </a>
+        </div>
+      </section>
+
+      <section style="width: 100%; max-width: 1000px; padding: clamp(56px, 9vh, 96px) 0 0;">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 30px;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: #a8a69f;">Elsewhere</span>
+          <span style="flex: 1; height: 1px; background: rgba(17,17,16,0.09);"></span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+          <a href="https://x.com/Tobyonbase" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 10px; padding: 15px 26px; border: 1px solid rgba(17,17,16,0.07); border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #2b2a27; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-2px); box-shadow: 0 12px 30px -14px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">X<span style="color: #c3c1ba;">↗</span></a>
+          <a href="https://t.me/toadgang" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 10px; padding: 15px 26px; border: 1px solid rgba(17,17,16,0.07); border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #2b2a27; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-2px); box-shadow: 0 12px 30px -14px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">Telegram<span style="color: #c3c1ba;">↗</span></a>
+          <a href="https://www.coinbase.com/price/toby" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 10px; padding: 15px 26px; border: 1px solid rgba(17,17,16,0.07); border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #2b2a27; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-2px); box-shadow: 0 12px 30px -14px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">Coinbase<span style="color: #c3c1ba;">↗</span></a>
+          <a href="https://app.uniswap.org/swap?outputCurrency=0xb8D98a102b0079B69FFbc760C8d857A31653e56e&chain=base" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 10px; padding: 15px 26px; border: 1px solid rgba(17,17,16,0.07); border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #2b2a27; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-2px); box-shadow: 0 12px 30px -14px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">Uniswap<span style="color: #c3c1ba;">↗</span></a>
+        </div>
+      </section>
+
+      <section style="width: 100%; max-width: 1000px; padding: clamp(56px, 9vh, 96px) 0 clamp(48px, 8vh, 80px);">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 30px;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: #a8a69f;">Community</span>
+          <span style="flex: 1; height: 1px; background: rgba(17,17,16,0.09);"></span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+          <a href="https://www.tobyisms.com/" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 10px; padding: 15px 26px; border: 1px solid rgba(17,17,16,0.07); border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #2b2a27; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-2px); box-shadow: 0 12px 30px -14px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">Tobyism<span style="color: #c3c1ba;">↗</span></a>
+          <a href="http://toadvault.xyz" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 10px; padding: 15px 26px; border: 1px solid rgba(17,17,16,0.07); border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #2b2a27; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-2px); box-shadow: 0 12px 30px -14px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">Toadvault<span style="color: #c3c1ba;">↗</span></a>
+          <a href="https://slice.so/store/2223" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 10px; padding: 15px 26px; border: 1px solid rgba(17,17,16,0.07); border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #2b2a27; background-color: rgba(255,255,255,0.6); background-image: linear-gradient(100deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.95) 46%, rgba(160,190,255,0.45) 54%, rgba(255,205,165,0.38) 62%, rgba(255,255,255,0.4) 74%, rgba(255,255,255,0) 90%); background-size: 300% 100%; background-repeat: no-repeat; background-position: -190% 0; backdrop-filter: blur(14px); box-shadow: 0 1px 2px rgba(17,17,16,0.04), inset 0 1px 0 rgba(255,255,255,0.9); transition: background-position 1.8s cubic-bezier(0.33,0.02,0.25,1), box-shadow 0.4s ease, transform 0.4s ease;" style-hover="background-position: 290% 0; transform: translateY(-2px); box-shadow: 0 12px 30px -14px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">Toad Merch<span style="color: #c3c1ba;">↗</span></a>
+        </div>
+      </section>
+
+    </main>
+
+    <footer style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin: 0 clamp(20px, 5vw, 64px); padding: 26px 0 34px; border-top: 1px solid rgba(17,17,16,0.09); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #b5b3ac;">
+      <span>Toby — 確信</span>
+      <span>thirsty toads sip where <a href="https://tobyworld.app/faucet/" style="color: inherit; text-decoration: none; cursor: inherit; letter-spacing: inherit;">still waters</a> keep.</span>
+      <span>MAR 2024 &mdash; &infin;</span>
+    </footer>
+
+    <a href="https://www.base.org" target="_blank" rel="noopener" aria-label="Built on Base" style="position: fixed; bottom: clamp(18px, 3vw, 30px); right: clamp(18px, 3vw, 30px); z-index: 30; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(17,17,16,0.07); background-color: rgba(255,255,255,0.7); backdrop-filter: blur(14px); box-shadow: 0 2px 8px -2px rgba(17,17,16,0.12), inset 0 1px 0 rgba(255,255,255,0.9); opacity: 0.92; transition: opacity 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;" style-hover="opacity: 1; transform: translateY(-2px); box-shadow: 0 10px 26px -10px rgba(17,17,16,0.3), inset 0 1px 0 rgba(255,255,255,0.9);">
+      <img src="uploads/pasted-1785881344235-0.png" alt="Base" style="display: block; width: 20px; height: 20px; object-fit: contain;" />
+    </a>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;gridOpacity&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.55,&quot;min&quot;:0,&quot;max&quot;:1,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Atmosphere&quot;},&quot;showSoonLabels&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Navigation&quot;},&quot;showAudioToggle&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Hero video&quot;}}">
+class Component extends DCLogic {
+  state = { copied: false };
+
+  // ── Cinematic: Cloudflare Stream, lazy click-to-play ──────────────────────
+  // Injected imperatively into a React-uncontrolled container so it survives
+  // component re-renders (e.g. the contract-copy button) without reloading.
+  _CF = 'customer-3tg9urc61k5tbv3q.cloudflarestream.com';
+  _VID = '09689a16cbed37c6c52fdd689c28227c';
+
+  // End-of-film CTA trigger — CONFIGURABLE. The "ENTER TOBY WORLD →" overlay fades in once the
+  // <video> element's currentTime reaches this many seconds (and on `ended`). Driven by the player's
+  // real `timeupdate`/`seeked`/`ended` events (not a hard-coded timer). Change this one number if the
+  // cinematic length changes.
+  enterWorldCtaAtSeconds = 100;
+
+  _cinematicRef = (el) => {
+    this.cinematicEl = el;
+    if (!el || el.__cineInit) return;
+    el.__cineInit = true;
+    this._renderPoster();
+  };
+
+  _renderPoster = () => {
+    const el = this.cinematicEl;
+    if (!el) return;
+    el.innerHTML =
+      '<button type="button" class="tw-cine-play" aria-label="Play the Tobyworld cinematic" ' +
+      'style="position:absolute;top:0;left:0;width:100%;height:100%;margin:0;padding:0;border:0;cursor:pointer;' +
+      "background:#0e0f12 url('/uploads/cinematic-poster.jpg') center/cover no-repeat;" +
+      'display:flex;align-items:center;justify-content:center;">' +
+      '<span class="tw-cine-badge" style="display:flex;align-items:center;justify-content:center;' +
+      'width:clamp(56px,9vw,78px);height:clamp(56px,9vw,78px);border-radius:50%;background:rgba(16,18,24,0.5);' +
+      '-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.55);' +
+      'box-shadow:0 10px 34px -10px rgba(0,0,0,0.55);transition:transform .3s ease, background .3s ease;">' +
+      '<svg width="26" height="26" viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true" style="margin-left:4px;"><path d="M8 5v14l11-7z"/></svg>' +
+      '</span></button>';
+    const btn = el.querySelector('.tw-cine-play');
+    const badge = () => el.querySelector('.tw-cine-badge');
+    btn.addEventListener('mouseenter', () => { const b = badge(); if (b) { b.style.transform = 'scale(1.06)'; b.style.background = 'rgba(16,18,24,0.68)'; } });
+    btn.addEventListener('mouseleave', () => { const b = badge(); if (b) { b.style.transform = 'scale(1)'; b.style.background = 'rgba(16,18,24,0.5)'; } });
+    btn.addEventListener('click', this._loadCinematic);
+  };
+
+  _svg = (k) => ({
+    play:  '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+    pause: '<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>',
+    vol:   '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M15.5 8.5a4 4 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+    mute:  '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M15 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+    fs:    '<svg viewBox="0 0 24 24"><path d="M5 5h5V3H3v7h2V5zm14 0v5h2V3h-7v2h5zM5 19v-5H3v7h7v-2H5zm14 0h-5v2h7v-7h-2v5z"/></svg>',
+    fsx:   '<svg viewBox="0 0 24 24"><path d="M4 9h5V4H7v3H4v2zm11-5v3h-3v2h5V4h-2zM4 15v2h3v3h2v-5H4zm11 5h2v-3h3v-2h-5v5z"/></svg>'
+  }[k] || '');
+
+  _manifest = () => 'https://' + this._CF + '/' + this._VID + '/manifest/video.m3u8';
+
+  // Click-to-play: builds a <video> + minimal custom controls + the CTA, then attaches the adaptive HLS.
+  _loadCinematic = () => {
+    const host = this.cinematicEl;
+    if (!host || host.__playing) return;
+    host.__playing = true;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'tw-player is-loading';
+    wrap.tabIndex = 0;
+    wrap.innerHTML =
+      '<video class="tw-video" playsinline webkit-playsinline preload="metadata"></video>' +
+      '<button type="button" class="tw-bigplay" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>' +
+      '<div class="tw-spin" aria-hidden="true"></div>' +
+      '<div class="tw-ctrls" role="group" aria-label="Cinematic controls">' +
+        '<button type="button" class="tw-btn tw-play" aria-label="Play">' + this._svg('play') + '</button>' +
+        '<div class="tw-seek"><div class="tw-seek-track"><div class="tw-seek-buf"></div><div class="tw-seek-prog"></div></div><input class="tw-seek-range" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek"></div>' +
+        '<div class="tw-time"><span class="tw-cur">0:00</span><span class="tw-sep">/</span><span class="tw-dur">0:00</span></div>' +
+        '<div class="tw-vol"><button type="button" class="tw-btn tw-mute" aria-label="Mute">' + this._svg('vol') + '</button><input class="tw-vol-range" type="range" min="0" max="1" step="0.02" value="1" aria-label="Volume"></div>' +
+        '<div class="tw-q"><button type="button" class="tw-btn tw-q-btn" aria-haspopup="true" aria-expanded="false">AUTO</button><div class="tw-q-menu" role="menu"></div></div>' +
+        '<button type="button" class="tw-btn tw-fs" aria-label="Fullscreen">' + this._svg('fs') + '</button>' +
+      '</div>' +
+      '<a class="tw-cta" href="/world" aria-label="Enter Toby World" aria-hidden="true" tabindex="-1">Enter Toby World <span class="tw-cta-arrow" aria-hidden="true">&#8594;</span></a>';
+    host.innerHTML = '';
+    host.appendChild(wrap);
+
+    const video = wrap.querySelector('.tw-video');
+    video.poster = '/uploads/cinematic-poster.jpg';
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    try {                                   // remember volume/mute for this session
+      const sv = sessionStorage.getItem('twVol'); if (sv !== null && !isNaN(parseFloat(sv))) video.volume = Math.min(1, Math.max(0, parseFloat(sv)));
+      if (sessionStorage.getItem('twMuted') === '1') video.muted = true;
+    } catch (e) {}
+
+    this._wire(wrap, video);
+    this._cta(wrap, video);
+    this._source(wrap, video);
+  };
+
+  // Attach adaptive HLS. IMPORTANT: prefer hls.js (MSE) — Chrome returns canPlayType('…mpegurl')="maybe"
+  // but cannot actually play HLS natively, so we decide on MSE support, not canPlayType. Native HLS is
+  // used only when MSE is unavailable but native HLS is (iOS Safari). hls.js is self-hosted + lazy.
+  _source = (wrap, video) => {
+    const url = this._manifest();
+    video.addEventListener('loadedmetadata', () => wrap.classList.remove('is-loading'), { once: true });
+    const play = () => { const p = video.play(); if (p && p.catch) p.catch(() => {}); };
+    const native = () => { video.src = url; const box = wrap.querySelector('.tw-q'); if (box) box.style.display = 'none'; play(); };
+    const mseOk = !!(window.MediaSource && typeof window.MediaSource.isTypeSupported === 'function' && window.MediaSource.isTypeSupported('video/mp4; codecs="avc1.4d401f,mp4a.40.2"'));
+    if (!mseOk) { native(); return; }        // iOS Safari etc. — native HLS + native ABR
+    const boot = () => {
+      const Hls = window.Hls;
+      if (!Hls || !Hls.isSupported()) { native(); return; }
+      // Prefer the highest rendition initially (high default bandwidth estimate) while ABR stays enabled
+      // and can drop if the real connection is slower — never permanently locked to 1080p.
+      const hls = new Hls({ startLevel: -1, capLevelToPlayerSize: false, abrEwmaDefaultEstimate: 10000000, maxBufferLength: 30 });
+      this._hls = hls;
+      hls.on(Hls.Events.MANIFEST_PARSED, () => { this._quality(wrap, hls); play(); });
+      hls.on(Hls.Events.ERROR, (evt, data) => {
+        if (!data || !data.fatal) return;
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
+        else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+        else hls.destroy();
+      });
+      hls.loadSource(url);
+      hls.attachMedia(video);
+    };
+    if (window.Hls) { boot(); return; }
+    let s = document.getElementById('tw-hls');
+    if (s) { s.addEventListener('load', boot); return; }
+    s = document.createElement('script'); s.id = 'tw-hls'; s.src = '/uploads/hls.min.js'; s.async = true; s.onload = boot;
+    document.head.appendChild(s);
+  };
+
+  // Minimal quality menu from the real Stream renditions (AUTO + 1080p/720p/480p/…). AUTO keeps ABR on.
+  _quality = (wrap, hls) => {
+    const menu = wrap.querySelector('.tw-q-menu'), btn = wrap.querySelector('.tw-q-btn'), box = wrap.querySelector('.tw-q');
+    if (!menu || !btn || !box || !hls.levels || !hls.levels.length) { if (box) box.style.display = 'none'; return; }
+    const opts = hls.levels.map((l, i) => ({ i: i, h: l.height || 0 })).sort((a, b) => b.h - a.h);
+    let html = '<button type="button" class="tw-q-opt is-active" role="menuitemradio" data-lvl="-1">Auto</button>';
+    const seen = {};
+    opts.forEach((o) => { if (o.h && !seen[o.h]) { seen[o.h] = 1; html += '<button type="button" class="tw-q-opt" role="menuitemradio" data-lvl="' + o.i + '">' + o.h + 'p</button>'; } });
+    menu.innerHTML = html;
+    const label = () => {
+      const l = hls.levels[hls.currentLevel];
+      btn.textContent = hls.autoLevelEnabled ? ('AUTO' + (l && l.height ? ' · ' + l.height + 'p' : '')) : (l && l.height ? l.height + 'p' : 'AUTO');
+    };
+    menu.querySelectorAll('.tw-q-opt').forEach((opt) => {
+      opt.addEventListener('click', () => {
+        const lvl = parseInt(opt.getAttribute('data-lvl'), 10);
+        hls.currentLevel = lvl; if (lvl === -1) hls.nextLevel = -1;
+        menu.querySelectorAll('.tw-q-opt').forEach((o) => o.classList.toggle('is-active', o === opt));
+        wrap.classList.remove('q-open'); btn.setAttribute('aria-expanded', 'false'); label();
+      });
+    });
+    btn.addEventListener('click', (e) => { e.stopPropagation(); const open = wrap.classList.toggle('q-open'); btn.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+    document.addEventListener('click', () => { wrap.classList.remove('q-open'); btn.setAttribute('aria-expanded', 'false'); });
+    hls.on(window.Hls.Events.LEVEL_SWITCHED, label);
+    label();
+  };
+
+  // Minimal controls: play/pause, seek, volume/mute, fullscreen. Idle-fade while playing; NO speed/PiP.
+  _wire = (wrap, video) => {
+    const q = (s) => wrap.querySelector(s);
+    const bigplay = q('.tw-bigplay'), playBtn = q('.tw-play'), muteBtn = q('.tw-mute'), volRange = q('.tw-vol-range'),
+          seek = q('.tw-seek-range'), prog = q('.tw-seek-prog'), buf = q('.tw-seek-buf'),
+          curEl = q('.tw-cur'), durEl = q('.tw-dur'), fsBtn = q('.tw-fs');
+    const fmt = (t) => { t = Math.max(0, Math.floor(t || 0)); const m = Math.floor(t / 60), s = t % 60; return m + ':' + (s < 10 ? '0' : '') + s; };
+    const paintPlay = () => { playBtn.innerHTML = video.paused ? this._svg('play') : this._svg('pause'); wrap.classList.toggle('is-paused', video.paused); };
+    const toggle = () => { if (video.paused) { const p = video.play(); if (p && p.catch) p.catch(() => {}); } else video.pause(); };
+    const show = () => { wrap.classList.add('show-ctrls'); clearTimeout(this._idle); if (!video.paused) this._idle = setTimeout(() => { if (!video.paused && !wrap.classList.contains('q-open')) wrap.classList.remove('show-ctrls'); }, 2600); };
+    bigplay.addEventListener('click', toggle);
+    playBtn.addEventListener('click', toggle);
+    video.addEventListener('play', () => { wrap.classList.remove('is-loading'); paintPlay(); show(); });
+    video.addEventListener('pause', () => { paintPlay(); wrap.classList.add('show-ctrls'); clearTimeout(this._idle); });
+    video.addEventListener('waiting', () => wrap.classList.add('is-buffering'));
+    video.addEventListener('playing', () => { wrap.classList.remove('is-buffering', 'is-loading'); paintPlay(); });
+    video.addEventListener('loadedmetadata', () => { durEl.textContent = fmt(video.duration); });
+    video.addEventListener('timeupdate', () => {
+      const d = video.duration || 0, t = video.currentTime || 0;
+      curEl.textContent = fmt(t);
+      if (d) { prog.style.width = (t / d * 100) + '%'; if (!seek.__drag) seek.value = String(Math.round(t / d * 1000)); }
+    });
+    video.addEventListener('progress', () => { try { if (video.buffered.length && video.duration) buf.style.width = (video.buffered.end(video.buffered.length - 1) / video.duration * 100) + '%'; } catch (e) {} });
+    seek.addEventListener('input', () => { seek.__drag = true; const d = video.duration || 0; if (d) prog.style.width = (parseInt(seek.value, 10) / 1000 * 100) + '%'; show(); });
+    seek.addEventListener('change', () => { const d = video.duration || 0; if (d) video.currentTime = parseInt(seek.value, 10) / 1000 * d; seek.__drag = false; });
+    const paintVol = () => { muteBtn.innerHTML = (video.muted || video.volume === 0) ? this._svg('mute') : this._svg('vol'); volRange.value = String(video.muted ? 0 : video.volume); };
+    muteBtn.addEventListener('click', () => { video.muted = !video.muted; try { sessionStorage.setItem('twMuted', video.muted ? '1' : '0'); } catch (e) {} });
+    volRange.addEventListener('input', () => { const v = parseFloat(volRange.value); video.volume = v; video.muted = v === 0; try { sessionStorage.setItem('twVol', String(v)); sessionStorage.setItem('twMuted', video.muted ? '1' : '0'); } catch (e) {} });
+    video.addEventListener('volumechange', paintVol);
+    const inFs = () => (document.fullscreenElement || document.webkitFullscreenElement) === wrap;
+    fsBtn.addEventListener('click', () => {
+      if (inFs()) { (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document); return; }
+      if (wrap.requestFullscreen) wrap.requestFullscreen();
+      else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
+      else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();   // iOS native fullscreen
+    });
+    const paintFs = () => { fsBtn.innerHTML = inFs() ? this._svg('fsx') : this._svg('fs'); wrap.classList.toggle('is-fs', inFs()); };
+    document.addEventListener('fullscreenchange', paintFs);
+    document.addEventListener('webkitfullscreenchange', paintFs);
+    wrap.addEventListener('mousemove', show);
+    wrap.addEventListener('mouseleave', () => { if (!video.paused) wrap.classList.remove('show-ctrls'); });
+    wrap.addEventListener('touchstart', (e) => { if (e.target.closest('.tw-ctrls, .tw-cta, .tw-bigplay')) return; show(); }, { passive: true });
+    wrap.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'k') { e.preventDefault(); toggle(); }
+      else if (e.key === 'f') fsBtn.click();
+      else if (e.key === 'm') muteBtn.click();
+      else if (e.key === 'ArrowRight') video.currentTime = Math.min(video.duration || 0, (video.currentTime || 0) + 5);
+      else if (e.key === 'ArrowLeft') video.currentTime = Math.max(0, (video.currentTime || 0) - 5);
+      show();
+    });
+    paintPlay(); paintVol(); show();
+  };
+
+  // End-of-film CTA, driven by the <video> element's real playback events (no external SDK).
+  _cta = (wrap, video) => {
+    const cta = wrap.querySelector('.tw-cta'); if (!cta) return;
+    const at = this.enterWorldCtaAtSeconds; let ended = false;
+    const set = (show) => { cta.classList.toggle('is-visible', show); cta.setAttribute('aria-hidden', show ? 'false' : 'true'); cta.tabIndex = show ? 0 : -1; };
+    const update = () => set(ended || (video.currentTime || 0) >= at);
+    video.addEventListener('timeupdate', update);
+    video.addEventListener('seeked', () => { if ((video.currentTime || 0) < 1.5) ended = false; update(); });
+    video.addEventListener('ended', () => { ended = true; update(); });
+    video.addEventListener('play', () => { if ((video.currentTime || 0) < 1.5) ended = false; update(); });
+  };
+
+  componentWillUnmount() {
+    clearTimeout(this._t);
+    clearTimeout(this._idle);
+    if (this._hls) { try { this._hls.destroy(); } catch (e) {} }
+  }
+
+  renderVals() {
+    return {
+      showSoon: this.props.showSoonLabels ?? true,
+      copyLabel: this.state.copied ? 'Copied' : 'Copy',
+      cinematicRef: this._cinematicRef,
+      copyContract: () => {
+        const addr = '0xb8D98a102b0079B69FFbc760C8d857A31653e56e';
+        if (navigator.clipboard) navigator.clipboard.writeText(addr).catch(() => {});
+        this.setState({ copied: true });
+        clearTimeout(this._t);
+        this._t = setTimeout(() => this.setState({ copied: false }), 1800);
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

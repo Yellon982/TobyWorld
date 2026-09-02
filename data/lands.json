@@ -3659,6 +3659,21 @@
       "Keeper": "Hush"
     }
   },
+  "245": {
+    "tokenId": 245,
+    "name": "Lore Land Deed #245",
+    "description": "One of 2,869 canonical Lore Land Deeds of Tobyworld. Genesis forged the path. Five signs shape each realm - Background, Land, Core, Relic and Keeper. No land walks the same journey. What was forged remains. The pond remembers.",
+    "image": "ipfs://QmeSLFnKbmvAKmA9P45HTuS12AUv1TrCYNT3qHEFzhuoQx/245.png",
+    "gateway_image_url": "https://gateway.pinata.cloud/ipfs/QmeSLFnKbmvAKmA9P45HTuS12AUv1TrCYNT3qHEFzhuoQx/245.png",
+    "external_url": "https://tobyworld.app/twpot/",
+    "attributes": {
+      "Background": "Cloudwake",
+      "Land": "The Pond",
+      "Core": "Rootbound",
+      "Relic": "Wayfinder Compass",
+      "Keeper": "Hush"
+    }
+  },
   "246": {
     "tokenId": 246,
     "name": "Lore Land Deed #246",
