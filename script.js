@@ -143,7 +143,7 @@ function createTextLabel(text, colorHex) {
         transparent: true
     });
     const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(33, 8.25, 1); // Increased size by 10%
+    sprite.scale.set(43, 10.75, 1); // Increased size by 30% for readability
     return sprite;
 }
 
@@ -263,7 +263,7 @@ function buildIslands() {
         
         // 3. Create the colored text label below it
         const labelSprite = createTextLabel(islandName, colorHex);
-        labelSprite.position.y = -16; // Moved down further for the much larger island
+        labelSprite.position.y = -17; // Moved down slightly more to accommodate 30% larger text
         islandGroup.add(labelSprite);
         
         // Perfectly even spacing
