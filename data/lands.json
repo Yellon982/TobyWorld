@@ -25409,6 +25409,21 @@
       "Keeper": "Satoby"
     }
   },
+  "2826": {
+    "name": "Lore Land Deed #2826",
+    "description": "One of 2,869 canonical Lore Land Deeds of Tobyworld. Genesis forged the path. Five signs shape each realm - Background, Land, Core, Relic and Keeper. No land walks the same journey. What was forged remains. The pond remembers.",
+    "image": "ipfs://QmV8bDmqR8RsfxXeCktisAfFH2RKTkCydxLUwZ9pFUHpnD/2826.png",
+    "external_url": "https://tobyworld.app/twpot/",
+    "attributes": {
+      "Background": "Gilded Dawn",
+      "Land": "Mossmere",
+      "Core": "Shard",
+      "Relic": "Seed Vessel",
+      "Keeper": "Satoby"
+    },
+    "tokenId": 2826,
+    "gateway_image_url": "https://gateway.pinata.cloud/ipfs/QmV8bDmqR8RsfxXeCktisAfFH2RKTkCydxLUwZ9pFUHpnD/2826.png"
+  },
   "2827": {
     "tokenId": 2827,
     "name": "Lore Land Deed #2827",

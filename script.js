@@ -697,7 +697,7 @@ if (searchBtn && searchInput) {
     const handleSearch = async () => {
         const tokenId = parseInt(searchInput.value);
         if (isNaN(tokenId) || tokenId < 1 || tokenId > 2869) {
-            alert('Please enter a valid Lore Land Deed # (1 - 2869)');
+            alert('Please enter a valid Lore Land Deed # (OWNED LANDS)');
             return;
         }
         
