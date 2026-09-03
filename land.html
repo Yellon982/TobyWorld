@@ -146,9 +146,12 @@
     </div>
 
     <div class="land-container">
-        <div id="image-wrapper" style="position: relative; display: inline-block; width: 100%; max-width: 18.75rem; margin: 0 auto 1rem auto; animation: float 4s ease-in-out infinite;">
-            <img id="land-image" src="" alt="Land Image" style="width: 100%; height: auto; display: block; filter: drop-shadow(0 0 1.5rem rgba(0, 255, 255, 0.5));">
-            <canvas id="particle-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: screen;"></canvas>
+        <div id="tilt-container" style="perspective: 1000px; margin: 0 auto 1rem auto; max-width: 18.75rem; animation: float 4s ease-in-out infinite;">
+            <div id="image-wrapper" style="position: relative; display: inline-block; width: 100%; transform-style: preserve-3d; transition: transform 0.1s ease-out;">
+                <img id="land-image" src="" alt="Land Image" style="width: 100%; height: auto; display: block; filter: drop-shadow(0 0 1.5rem rgba(0, 255, 255, 0.5)); transform: translateZ(20px);">
+                <canvas id="particle-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: screen; transform: translateZ(30px);"></canvas>
+                <div id="glare" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: color-dodge; opacity: 0; transition: opacity 0.3s; transform: translateZ(40px); border-radius: 5px;"></div>
+            </div>
         </div>
         <h1 class="land-title" id="land-name">LOADING...</h1>
         <h3 id="land-rank" style="color: #ffaa00; text-align: center; margin-top: -10px; margin-bottom: 20px; font-family: 'Share Tech Mono', monospace; letter-spacing: 2px; text-shadow: 0 0 10px #ffaa00;"></h3>
@@ -416,6 +419,57 @@
                 canvas.height = imgWrapper.offsetHeight;
             });
         }
+        
+        function initHolographicTilt() {
+            const tiltContainer = document.getElementById('tilt-container');
+            const tiltElement = document.getElementById('image-wrapper');
+            const glare = document.getElementById('glare');
+            
+            if (!tiltContainer || !tiltElement || !glare) return;
+            
+            function handleMove(e) {
+                // Prevent scrolling if touching the image
+                if (e.type === 'touchmove') e.preventDefault();
+                
+                const rect = tiltContainer.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                let x = clientX - rect.left;
+                let y = clientY - rect.top;
+                
+                // Bound coordinates to the container
+                x = Math.max(0, Math.min(x, rect.width));
+                y = Math.max(0, Math.min(y, rect.height));
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                // Max 20 degree tilt
+                const rotateX = ((y - centerY) / centerY) * -20; 
+                const rotateY = ((x - centerX) / centerX) * 20;
+                
+                tiltElement.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                
+                // Glare effect sweeps across
+                glare.style.opacity = '1';
+                glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 60%)`;
+            }
+            
+            function handleLeave() {
+                tiltElement.style.transform = `rotateX(0deg) rotateY(0deg)`;
+                glare.style.opacity = '0';
+            }
+            
+            tiltContainer.addEventListener('mousemove', handleMove);
+            tiltContainer.addEventListener('mouseleave', handleLeave);
+            
+            tiltContainer.addEventListener('touchstart', handleMove, { passive: false });
+            tiltContainer.addEventListener('touchmove', handleMove, { passive: false });
+            tiltContainer.addEventListener('touchend', handleLeave);
+        }
+        
+        initHolographicTilt();
     </script>
 </body>
 </html>
