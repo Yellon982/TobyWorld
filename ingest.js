@@ -54,6 +54,9 @@ async function fetchWithFallback(tokenId) {
             if (response.ok) {
                 const data = await response.json();
                 return data;
+            } else if (response.status === 404) {
+                console.log(`[SKIPPED] Token ${tokenId} does not exist on IPFS (404)`);
+                return null;
             }
         } catch (error) {
             // Silently try next gateway
@@ -91,6 +94,11 @@ async function ingestToken(tokenId) {
     try {
         const rawData = await fetchWithFallback(tokenId);
         
+        if (!rawData) {
+            // It was a 404, just skip this token entirely
+            return { success: true };
+        }
+        
         // Transform the data
         const processed = {
             tokenId: tokenId,
@@ -127,11 +135,11 @@ async function run() {
     for (let i = 0; i < tokensToProcess.length; i += CONCURRENCY) {
         const batch = tokensToProcess.slice(i, i + CONCURRENCY);
         await Promise.all(batch.map(tokenId => ingestToken(tokenId)));
-        
-        // Save progress after each batch
-        fs.writeFileSync(LANDS_FILE, JSON.stringify(landsData, null, 2));
-        fs.writeFileSync(FAILED_FILE, JSON.stringify(failedTokens, null, 2));
     }
+    
+    // Save progress at the end
+    fs.writeFileSync(LANDS_FILE, JSON.stringify(landsData, null, 2));
+    fs.writeFileSync(FAILED_FILE, JSON.stringify([...new Set(failedTokens)], null, 2));
     
     const timeTaken = (Date.now() - startTime) / 1000;
     const successCount = Object.keys(landsData).length;
