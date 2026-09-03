@@ -43,16 +43,6 @@
             box-sizing: border-box;
         }
 
-        #land-image {
-            width: 100%;
-            max-width: 18.75rem; /* ~300px */
-            height: auto;
-            margin: 0 auto 1rem auto;
-            display: block;
-            filter: drop-shadow(0 0 1.5rem rgba(0, 255, 255, 0.5));
-            animation: float 4s ease-in-out infinite;
-        }
-
         @keyframes float {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-1rem); }
@@ -156,7 +146,10 @@
     </div>
 
     <div class="land-container">
-        <img id="land-image" src="" alt="Land Image">
+        <div id="image-wrapper" style="position: relative; display: inline-block; width: 100%; max-width: 18.75rem; margin: 0 auto 1rem auto; animation: float 4s ease-in-out infinite;">
+            <img id="land-image" src="" alt="Land Image" style="width: 100%; height: auto; display: block; filter: drop-shadow(0 0 1.5rem rgba(0, 255, 255, 0.5));">
+            <canvas id="particle-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: screen;"></canvas>
+        </div>
         <h1 class="land-title" id="land-name">LOADING...</h1>
         <h3 id="land-rank" style="color: #ffaa00; text-align: center; margin-top: -10px; margin-bottom: 20px; font-family: 'Share Tech Mono', monospace; letter-spacing: 2px; text-shadow: 0 0 10px #ffaa00;"></h3>
         
@@ -280,6 +273,9 @@
                 document.getElementById('trait-keeper').innerHTML = getTrait("KEEPER");
                 document.getElementById('trait-relic').innerHTML = getTrait("RELIC");
                 
+                // Start thematic particles based on the background and land
+                initParticles(getTrait("BACKGROUND"), getTrait("LAND"));
+                
                 if (metadata.rank && metadata.totalLandsRanked) {
                     document.getElementById('land-rank').innerText = `GLOBAL RARITY RANK: #${metadata.rank} / ${metadata.totalLandsRanked} OWNED LANDS`;
                 }
@@ -336,6 +332,90 @@
         document.getElementById('os-btn').onclick = () => window.open("https://opensea.io/collection/tobyworld-canonical-lore-land-deeds", "_blank");
 
         fetchIslandData();
+
+        function initParticles(background, landType) {
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            const imgWrapper = document.getElementById('image-wrapper');
+            
+            // Match canvas size to image
+            canvas.width = imgWrapper.offsetWidth;
+            canvas.height = imgWrapper.offsetHeight;
+            
+            let particles = [];
+            let particleColor = 'rgba(255, 255, 255, 0.8)';
+            let particleBehavior = 'float'; // 'float', 'rise', 'fall'
+            
+            // Determine colors and behavior based on traits
+            background = (background || '').toLowerCase();
+            landType = (landType || '').toLowerCase();
+            
+            if (background.includes('gilded') || background.includes('sun')) {
+                particleColor = 'rgba(255, 220, 100, 0.8)'; // Golden motes
+                particleBehavior = 'float';
+            } else if (landType.includes('mossmere') || background.includes('spore')) {
+                particleColor = 'rgba(100, 255, 120, 0.7)'; // Green spores
+                particleBehavior = 'float';
+            } else if (landType.includes('ember') || background.includes('dusk')) {
+                particleColor = 'rgba(255, 100, 50, 0.8)'; // Fire embers
+                particleBehavior = 'rise';
+            } else if (background.includes('water') || landType.includes('pond')) {
+                particleColor = 'rgba(100, 200, 255, 0.7)'; // Water droplets/bubbles
+                particleBehavior = 'rise';
+            } else if (background.includes('cloud')) {
+                particleColor = 'rgba(230, 240, 255, 0.6)'; // Cloud mist
+                particleBehavior = 'fall';
+            }
+            
+            for(let i = 0; i < 40; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2 + 0.5,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: particleBehavior === 'rise' ? -(Math.random() * 1 + 0.2) : 
+                        particleBehavior === 'fall' ? (Math.random() * 0.5 + 0.1) : 
+                        (Math.random() - 0.5) * 0.5,
+                    life: Math.random()
+                });
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life += 0.01;
+                    
+                    // Wrap around
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.y > canvas.height) p.y = 0;
+                    
+                    // Pulsing opacity
+                    const opacity = (Math.sin(p.life * Math.PI * 2) * 0.5 + 0.5) * 0.8;
+                    
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = particleColor.replace(/[\d.]+\)$/g, opacity + ')');
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = particleColor;
+                    ctx.fill();
+                });
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+            
+            // Handle resize
+            window.addEventListener('resize', () => {
+                canvas.width = imgWrapper.offsetWidth;
+                canvas.height = imgWrapper.offsetHeight;
+            });
+        }
     </script>
 </body>
 </html>
