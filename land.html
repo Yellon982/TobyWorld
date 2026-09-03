@@ -151,6 +151,7 @@
                 <img id="land-image" src="" alt="Land Image" style="width: 100%; height: auto; display: block; filter: drop-shadow(0 0 1.5rem rgba(0, 255, 255, 0.5)); transform: translateZ(20px);">
                 <canvas id="particle-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: screen; transform: translateZ(30px);"></canvas>
                 <div id="glare" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: color-dodge; opacity: 0; transition: opacity 0.3s; transform: translateZ(40px); border-radius: 5px;"></div>
+                <button id="open-explore" style="position: absolute; bottom: 10px; right: 10px; z-index: 100; background: rgba(0, 20, 40, 0.8); border: 1px solid #00ffff; color: #00ffff; padding: 5px 10px; font-family: 'Share Tech Mono', monospace; cursor: pointer; transform: translateZ(50px); box-shadow: 0 0 10px rgba(0,255,255,0.5);">[+] EXPLORE</button>
             </div>
         </div>
         <h1 class="land-title" id="land-name">LOADING...</h1>
@@ -185,6 +186,14 @@
         </div>
         
         <p id="status-msg" style="margin-top: 20px; color: #00ffff; font-family: 'Share Tech Mono';"></p>
+    </div>
+
+    <!-- EXPLORE MODAL -->
+    <div id="explore-modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000208; z-index: 99999; display: none; overflow: hidden; touch-action: none;">
+        <button id="close-explore" class="cyber-button" style="position: absolute; top: 20px; right: 20px; z-index: 100000; padding: 10px 20px;">[X] CLOSE</button>
+        <div id="explore-container" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+            <img id="explore-img" src="" alt="Explore Land" style="width: 100%; max-width: none; max-height: none; object-fit: contain; transform-origin: center center;">
+        </div>
     </div>
 
     <!-- Ethers.js -->
@@ -469,7 +478,109 @@
             tiltContainer.addEventListener('touchend', handleLeave);
         }
         
+        function initExplore() {
+            const modal = document.getElementById('explore-modal');
+            const openBtn = document.getElementById('open-explore');
+            const closeBtn = document.getElementById('close-explore');
+            const expImg = document.getElementById('explore-img');
+            const sourceImg = document.getElementById('land-image');
+            
+            let scale = 1;
+            let pointX = 0, pointY = 0;
+            let start = { x: 0, y: 0 };
+            let panning = false;
+            let initialDistance = null;
+            let initialScale = 1;
+            
+            function setTransform() {
+                expImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+            }
+            
+            openBtn.onclick = () => {
+                expImg.src = sourceImg.src;
+                modal.style.display = 'block';
+                // Reset
+                scale = 1; pointX = 0; pointY = 0;
+                setTransform();
+            };
+            
+            closeBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
+            
+            // Mouse drag
+            modal.onmousedown = (e) => {
+                if (e.target === closeBtn) return;
+                e.preventDefault();
+                start = { x: e.clientX - pointX, y: e.clientY - pointY };
+                panning = true;
+            };
+            modal.onmouseup = () => { panning = false; };
+            modal.onmouseleave = () => { panning = false; };
+            modal.onmousemove = (e) => {
+                if (!panning) return;
+                e.preventDefault();
+                pointX = e.clientX - start.x;
+                pointY = e.clientY - start.y;
+                setTransform();
+            };
+            
+            // Mouse wheel zoom
+            modal.onwheel = (e) => {
+                e.preventDefault();
+                let xs = (e.clientX - pointX) / scale;
+                let ys = (e.clientY - pointY) / scale;
+                let delta = e.deltaY;
+                
+                scale *= delta > 0 ? 0.9 : 1.1;
+                scale = Math.max(0.5, Math.min(scale, 10)); // limit zoom
+                
+                pointX = e.clientX - xs * scale;
+                pointY = e.clientY - ys * scale;
+                setTransform();
+            };
+            
+            // Touch (Pinch zoom & pan)
+            modal.ontouchstart = (e) => {
+                if (e.target === closeBtn) return;
+                e.preventDefault();
+                if (e.touches.length === 2) {
+                    initialDistance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    initialScale = scale;
+                } else if (e.touches.length === 1) {
+                    start = { x: e.touches[0].clientX - pointX, y: e.touches[0].clientY - pointY };
+                    panning = true;
+                }
+            };
+            
+            modal.ontouchmove = (e) => {
+                e.preventDefault();
+                if (e.touches.length === 2 && initialDistance) {
+                    let currentDistance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    scale = initialScale * (currentDistance / initialDistance);
+                    scale = Math.max(0.5, Math.min(scale, 10));
+                    setTransform();
+                } else if (e.touches.length === 1 && panning) {
+                    pointX = e.touches[0].clientX - start.x;
+                    pointY = e.touches[0].clientY - start.y;
+                    setTransform();
+                }
+            };
+            
+            modal.ontouchend = () => {
+                panning = false;
+                initialDistance = null;
+            };
+        }
+        
         initHolographicTilt();
+        initExplore();
     </script>
 </body>
 </html>
