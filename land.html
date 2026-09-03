@@ -288,8 +288,8 @@
                 // Start thematic particles based on the background and land
                 initParticles(getTrait("BACKGROUND"), getTrait("LAND"));
                 
-                if (metadata.rank && metadata.totalLandsRanked) {
-                    document.getElementById('land-rank').innerText = `GLOBAL RARITY RANK: #${metadata.rank} / ${metadata.totalLandsRanked} OWNED LANDS`;
+                if (metadata.rank) {
+                    document.getElementById('land-rank').innerText = `GLOBAL RARITY RANK: #${metadata.rank} (OWNED LANDS)`;
                 }
 
                 // Extra metadata from the API
