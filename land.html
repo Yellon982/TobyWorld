@@ -342,6 +342,7 @@
                 if (metadata && metadata.image) {
                     const cid = metadata.image.replace('ipfs://', '');
                     const gateways = [
+                        `/api/image/${tokenId}`,
                         `https://dweb.link/ipfs/${cid}`,
                         `https://cloudflare-ipfs.com/ipfs/${cid}`,
                         metadata.gateway_image_url,
