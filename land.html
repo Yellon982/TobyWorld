@@ -342,9 +342,10 @@
                 if (metadata && metadata.image) {
                     const cid = metadata.image.replace('ipfs://', '');
                     const gateways = [
+                        `https://dweb.link/ipfs/${cid}`,
+                        `https://cloudflare-ipfs.com/ipfs/${cid}`,
                         metadata.gateway_image_url,
-                        `https://ipfs.io/ipfs/${cid}`,
-                        `https://dweb.link/ipfs/${cid}`
+                        `https://ipfs.io/ipfs/${cid}`
                     ].filter(Boolean);
                     
                     let currentGatewayIndex = 0;
