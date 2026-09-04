@@ -532,20 +532,18 @@ body::after {
 
 .search-instruction {
     position: absolute;
-    bottom: 40px;
+    top: 75%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     z-index: 999;
     pointer-events: none;
     color: #00ffff;
     font-family: 'Share Tech Mono', monospace;
     font-size: 16px;
     text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+    letter-spacing: 3px;
     text-align: center;
-    width: 100%;
-    letter-spacing: 2px;
-    background: transparent;
-    border: none;
+    white-space: nowrap;
 }
 
 /* Mobile Tweaks */
@@ -615,7 +613,8 @@ body::after {
     }
 
     .search-instruction {
-        bottom: 20px;
+        top: 75%;
+        bottom: auto;
         font-size: 12px;
         letter-spacing: 1px;
     }
