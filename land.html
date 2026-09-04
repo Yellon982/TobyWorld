@@ -178,6 +178,10 @@
                 <h4>RELIC</h4>
                 <div class="data-value" id="trait-relic">FETCHING...</div>
             </div>
+            <div class="data-box">
+                <h4>TRANSFERS</h4>
+                <div class="data-value" id="trait-transfers">FETCHING...</div>
+            </div>
 
             <div class="data-box" style="grid-column: 1 / -1; text-align: center; border: none; background: transparent; padding-top: 1rem;">
                 <button class="cyber-button" id="os-btn" style="width: auto; padding: 10px 40px;">VIEW DEED ON OPENSEA</button>
@@ -290,6 +294,34 @@
                 document.getElementById('trait-keeper').innerHTML = getTrait("KEEPER");
                 document.getElementById('trait-relic').innerHTML = getTrait("RELIC");
                 
+                // Fetch Transfer Nonce directly from the blockchain
+                try {
+                    const hexTokenId = parseInt(tokenId).toString(16).padStart(64, '0');
+                    const rpcData = '0x6e303cad' + hexTokenId;
+                    
+                    const rpcResponse = await fetch(BASE_RPC_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            jsonrpc: '2.0',
+                            id: 1,
+                            method: 'eth_call',
+                            params: [{ to: CONTRACT_ADDRESS, data: rpcData }, 'latest']
+                        })
+                    });
+                    
+                    const rpcResult = await rpcResponse.json();
+                    if (rpcResult.result && rpcResult.result !== '0x') {
+                        const transfers = parseInt(rpcResult.result, 16);
+                        document.getElementById('trait-transfers').innerHTML = `<span style="color: #00ff88;">${transfers}</span>`;
+                    } else {
+                        document.getElementById('trait-transfers').innerHTML = `<span style="color: #ffaa00;">0</span>`;
+                    }
+                } catch (e) {
+                    console.error("Transfer RPC Error:", e);
+                    document.getElementById('trait-transfers').innerText = "UNAVAILABLE";
+                }
+                
                 // Start thematic particles based on the background and land
                 initParticles(getTrait("BACKGROUND"), getTrait("LAND"));
                 
@@ -343,6 +375,7 @@
                 document.getElementById('trait-core').innerText = "OFFLINE";
                 document.getElementById('trait-keeper').innerText = "OFFLINE";
                 document.getElementById('trait-relic').innerText = "OFFLINE";
+                document.getElementById('trait-transfers').innerText = "OFFLINE";
             }
         }
 
