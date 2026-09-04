@@ -159,6 +159,10 @@
         
         <div class="data-grid" id="data-display">
             <div class="data-box">
+                <h4>LAND TYPE</h4>
+                <div class="data-value" id="trait-land">FETCHING...</div>
+            </div>
+            <div class="data-box">
                 <h4>BACKGROUND</h4>
                 <div class="data-value" id="trait-background">FETCHING...</div>
             </div>
@@ -280,6 +284,7 @@
                     return val;
                 };
 
+                document.getElementById('trait-land').innerHTML = getTrait("LAND");
                 document.getElementById('trait-background').innerHTML = getTrait("BACKGROUND");
                 document.getElementById('trait-core').innerHTML = getTrait("CORE");
                 document.getElementById('trait-keeper').innerHTML = getTrait("KEEPER");
@@ -333,6 +338,7 @@
                 console.error(err);
                 statusMsg.innerText = ""; // Hide the error text from the user
                 
+                document.getElementById('trait-land').innerText = "OFFLINE";
                 document.getElementById('trait-background').innerText = "OFFLINE";
                 document.getElementById('trait-core').innerText = "OFFLINE";
                 document.getElementById('trait-keeper').innerText = "OFFLINE";
