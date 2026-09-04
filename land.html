@@ -347,11 +347,6 @@
                     };
                     preloadImg.onerror = () => {
                         console.warn('IPFS Gateway timeout. Retaining generic visual.');
-                        // Fallback to a secondary public IPFS gateway if Pinata fails
-                        if (metadata.image) {
-                            const cid = metadata.image.replace('ipfs://', '');
-                            imgElement.src = `https://ipfs.io/ipfs/${cid}`;
-                        }
                     };
                     preloadImg.src = metadata.gateway_image_url;
                 } else if (tokenId) {
