@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const TOTAL_TOKENS = 2869;
+const TOTAL_TOKENS = 4000;
 const IPFS_CID = "QmePpWhx8kmPJZBsQwP1bYQxJAdFUorE59ARtCUxew2ZRV";
 const DATA_DIR = path.join(__dirname, 'data');
 const LANDS_FILE = path.join(DATA_DIR, 'lands.json');
