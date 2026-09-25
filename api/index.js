@@ -11,6 +11,18 @@ const DATA_FILE = path.join(__dirname, '..', 'data', 'lands.json');
 app.use(cors());
 app.use(express.json());
 
+// Keep contract supply separate from the count of successfully cached metadata.
+app.get('/api/health', (req, res) => {
+    try {
+        const report = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'refresh_report.json'), 'utf8'));
+        const { failures, missingMetadata, removedInactiveIds, ...summary } = report;
+        res.setHeader('Cache-Control', 'no-store');
+        res.json({ status: report.refreshInProgress ? 'refreshing' : report.complete ? 'ok' : 'incomplete', ...summary, missingMetadataCount: report.refreshInProgress ? null : missingMetadata.length });
+    } catch (error) {
+        res.status(503).json({ status: 'unverified', error: 'No verified refresh report is available' });
+    }
+});
+
 // Utility to read data and calculate statistical rarity
 function getLandsData() {
     if (!fs.existsSync(DATA_FILE)) return {};

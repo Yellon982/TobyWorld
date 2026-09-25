@@ -1,0 +1,18 @@
+{
+  "contract": "0x0495601Af6f86efb14C9D478eA46b2Aa09cB164A",
+  "chainId": 8453,
+  "snapshotBlock": 51789087,
+  "snapshotHash": "0x3e37f8c372b0f13038265e86baa32a59fda0b23c3d31b947ce24bfca1d69ce52",
+  "deploymentBlock": 50146552,
+  "updatedAt": "2026-09-25T20:50:46.401Z",
+  "mintedSupply": 2869,
+  "activeSupply": 2869,
+  "burnedSupply": 0,
+  "indexedMetadata": 2869,
+  "verifiedMetadata": 2869,
+  "failedMetadata": 0,
+  "missingMetadata": [],
+  "removedInactiveIds": [],
+  "complete": true,
+  "failures": {}
+}
