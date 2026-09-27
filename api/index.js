@@ -10,6 +10,7 @@ const DATA_FILE = path.join(__dirname, '..', 'data', 'lands.json');
 
 app.use(cors());
 app.use(express.json());
+app.get('/api/lands/:tokenId/ownership', require('../lib/ownership').createOwnershipHandler());
 
 // Keep contract supply separate from the count of successfully cached metadata.
 app.get('/api/health', (req, res) => {
