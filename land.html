@@ -259,6 +259,23 @@
                 
                 const metadata = await response.json();
 
+                // Display rank immediately; ownership is checked independently of lore loading.
+                if (metadata.rank) {
+                    const rankDisplay = document.getElementById('land-rank');
+                    const rankText = `GLOBAL RARITY RANK: #${metadata.rank}`;
+                    rankDisplay.textContent = `${rankText} (Checking ownership...)`;
+                    fetch(`/api/lands/${encodeURIComponent(tokenId)}/ownership`, {
+                        cache: 'no-store', signal: AbortSignal.timeout(10000)
+                    }).then(async response => {
+                        if (!response.ok) throw new Error('Ownership unavailable');
+                        const ownership = await response.json();
+                        if (!['In The Pond', 'Owned'].includes(ownership.status)) throw new Error('Invalid ownership status');
+                        rankDisplay.textContent = `${rankText} (${ownership.status})`;
+                    }).catch(() => {
+                        rankDisplay.textContent = `${rankText} (Ownership unavailable)`;
+                    });
+                }
+
                 const getTrait = (type) => {
                     if (!metadata || !metadata.attributes) return "OFFLINE";
                     
@@ -325,9 +342,6 @@
                 // Start thematic particles based on the background and land
                 initParticles(getTrait("BACKGROUND"), getTrait("LAND"));
                 
-                if (metadata.rank) {
-                    document.getElementById('land-rank').innerText = `GLOBAL RARITY RANK: #${metadata.rank} (OWNED LANDS)`;
-                }
 
                 // Extra metadata from the API
                 if (metadata.description) {
